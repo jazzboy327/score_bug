@@ -1,17 +1,24 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Scoreboard from "./components/Scoreboard"
 import AdminPanel from "./components/AdminPanel"
-import GameOverlay from "./components/GameOverlay"
-
+import ScoreControl from "./components/ScoreControl"
+import GameForm from "./components/GameForm"
+import Login from "./components/Login"
+import { Appconfig } from "./config"
+import ScoreboardA from "./components/ScoreboardA"
+import ScoreboardB from "./components/ScoreboardB"
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/overlay/:gameId" element={<Scoreboard />} />
-        <Route path="/admin/:gameId" element={<AdminPanel />} />
-        <Route path="/overlay2/:gameId" element={<GameOverlay />} />
+        <Route path={Appconfig.login_url} element={<Login />} />
+        <Route path={Appconfig.admin_panel_url} element={<AdminPanel />} />
+        <Route path={Appconfig.register_url} element={<GameForm mode="create" />} />
+        <Route path={Appconfig.edit_url} element={<GameForm mode="edit" />} />
+        <Route path={Appconfig.controller_url} element={<ScoreControl />} />
+        <Route path={Appconfig.scoreboardA_template_url} element={<ScoreboardA />} />
+        <Route path={Appconfig.scoreboardB_template_url} element={<ScoreboardB />} />
       </Routes>
     </BrowserRouter>
   )
