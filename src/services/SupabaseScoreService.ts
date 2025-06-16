@@ -13,13 +13,17 @@ export class SupabaseScoreService implements ScoreService {
     }
       
       async updateLiveScore(score: ScoreRow): Promise<void> {
+        console.log("updateLiveScore", score);
           const { error } = await supabase
             .from('scores')
-            .upsert({
-              home_score: score.h_score,
-              away_score: score.a_score,
+            .update({
+              h_score: score.h_score,
+              a_score: score.a_score,
               inning: score.inning,
               is_top: score.is_top,
+              is_first: score.is_first,
+              is_second: score.is_second,
+              is_third: score.is_third,
               s_count: score.s_count,
               b_count: score.b_count,
               o_count: score.o_count
@@ -30,6 +34,7 @@ export class SupabaseScoreService implements ScoreService {
       }
 
     async getScore(gameId: number): Promise<ScoreRow | null> {
+        console.log("getScore", gameId);
         const { data, error } = await supabase
             .from('scores')
             .select('*')

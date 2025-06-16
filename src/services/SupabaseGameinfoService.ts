@@ -16,7 +16,7 @@ export class SupabaseGameinfoService implements GameInfoService {
     async updateGameInfo(gameInfo: GameInfoRow): Promise<void> {
         const { error } = await supabase
           .from('game_info')
-          .upsert({
+          .update({
             title: gameInfo.title,
             date_time: gameInfo.date_time,
             home_team: gameInfo.home_team,
