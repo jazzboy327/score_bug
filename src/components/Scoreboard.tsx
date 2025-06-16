@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { supabase } from "../utils/supabaseClient"
 import type { ScoreRow, GameInfoRow } from "../types/scoreboard"
+import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
+import { SupabaseScoreService } from "../services/SupabaseScoreService"
+
+const gameInfoService: SupabaseGameinfoService = new SupabaseGameinfoService();
+const scoreService: SupabaseScoreService = new SupabaseScoreService();
 
 function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolean; color?: 'green' | 'yellow' | 'red'; size?: string }) {
   const colorClass = active
@@ -40,53 +44,38 @@ export default function Scoreboard() {
 
   useEffect(() => {
     const fetchScore = async () => {
-      const { data } = await supabase
-        .from("scores")
-        .select("*")
-        .eq("game_id", gameId)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-      if (data && data.length > 0) {
+      const data = await scoreService.getScore(Number(gameId));
+      if (data) {
         console.log("fetchScore")
-        console.log(data[0])
-        setScore(data[0])
+        setScore(data)
       }
     }
     const fetchGameInfo = async () => {
-      const { data } = await supabase
-        .from("game_info")
-        .select("*")
-        .eq("game_id", gameId)
-        .limit(1)
-      if (data && data.length > 0) {
+      const data = await gameInfoService.getGameInfo(Number(gameId));
+      if (data) {
         console.log("fetchGameInfo")
-        console.log(data[0])
-        setGameInfo(data[0])
+        setGameInfo(data)
       }
     }
-    const scoreChannel = supabase
-      .channel("score-update")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "scores" },
-        fetchScore
-      )
-      .subscribe()
-    const gameInfoChannel = supabase
-      .channel("gameinfo-update")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "game_info" },
-        fetchGameInfo
-      )
-      .subscribe()
+
+    const unsubscribeScore = scoreService.subscribeToScoreUpdates((newScore) => {
+      if (newScore.game_id === Number(gameId)) {
+        setScore(newScore);
+      }
+    });
+
+    const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
+      if (newGameInfo.game_id === Number(gameId)) {
+        setGameInfo(newGameInfo);
+      }
+    });
 
     fetchScore()
     fetchGameInfo()
 
     return () => {
-      scoreChannel.unsubscribe()
-      gameInfoChannel.unsubscribe()
+      unsubscribeScore()
+      unsubscribeGameInfo()
     }
   }, [gameId])
 
@@ -165,3 +154,4 @@ export default function Scoreboard() {
     </div>
   )
 }
+

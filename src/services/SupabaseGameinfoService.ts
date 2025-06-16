@@ -27,8 +27,17 @@ export class SupabaseGameinfoService implements GameInfoService {
         if (error) throw error;
       }
       
+    async getGameInfo(gameId: number): Promise<GameInfoRow | null> {
+        const { data, error } = await supabase
+            .from('game_info')
+            .select('*')
+            .eq('game_id', gameId)
+            .limit(1)
+            .single();
 
-
+        if (error) throw error;
+        return data;
+    }
 }
 
 

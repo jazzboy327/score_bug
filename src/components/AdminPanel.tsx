@@ -1,21 +1,34 @@
 import { useState } from "react"
-import { supabase } from "../utils/supabaseClient"
+import { useParams } from "react-router-dom"
+import type { ScoreRow } from "../types/scoreboard"
+import { SupabaseScoreService } from "../services/SupabaseScoreService"
 
-interface ScoreRow {
-  team: 'home' | 'away'
-  inning: number
-  runs: number
-}
+const scoreService = new SupabaseScoreService();
 
 export default function AdminPanel() {
+  const { gameId } = useParams<{ gameId: string }>();
   const [team, setTeam] = useState<'home' | 'away'>('home')
   const [inning, setInning] = useState(1)
   const [runs, setRuns] = useState(0)
 
   const updateScore = async () => {
-    await supabase
-      .from('scores')
-      .upsert({ team, inning, runs } as ScoreRow, { onConflict: 'team,inning' })
+    const score: ScoreRow = {
+      id: '',
+      game_id: Number(gameId),
+      inning,
+      is_top: true,
+      h_score: team === 'home' ? runs : 0,
+      a_score: team === 'away' ? runs : 0,
+      s_count: 0,
+      b_count: 0,
+      o_count: 0,
+      is_first: false,
+      is_second: false,
+      is_third: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    await scoreService.updateLiveScore(score);
   }
 
   return (

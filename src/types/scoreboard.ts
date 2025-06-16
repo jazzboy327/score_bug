@@ -28,9 +28,11 @@ export interface GameInfoRow {
 export interface GameInfoService {
   subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void;
   updateGameInfo(gameInfo: GameInfoRow): Promise<void>;
+  getGameInfo(gameId: number): Promise<GameInfoRow | null>;
 }
 
 export interface ScoreService {
   subscribeToScoreUpdates(callback: (score: ScoreRow) => void): () => void;
   updateLiveScore(liveScore: ScoreRow): Promise<void>;
+  getScore(gameId: number): Promise<ScoreRow | null>;
 }
