@@ -23,4 +23,14 @@ export interface GameInfoRow {
   away_team: string;
   created_at: string;
   updated_at: string;
-} 
+}
+
+export interface GameInfoService {
+  subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void;
+  updateGameInfo(gameInfo: GameInfoRow): Promise<void>;
+}
+
+export interface ScoreService {
+  subscribeToScoreUpdates(callback: (score: ScoreRow) => void): () => void;
+  updateLiveScore(liveScore: ScoreRow): Promise<void>;
+}

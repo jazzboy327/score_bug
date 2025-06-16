@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { supabase } from "../services/supabase"
+import { supabase } from "../utils/supabaseClient"
 
 interface ScoreRow {
   team: 'home' | 'away'

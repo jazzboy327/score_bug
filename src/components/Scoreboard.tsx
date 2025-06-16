@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { supabase } from "../services/supabase"
+import { supabase } from "../utils/supabaseClient"
 import type { ScoreRow, GameInfoRow } from "../types/scoreboard"
 
 function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolean; color?: 'green' | 'yellow' | 'red'; size?: string }) {
@@ -85,8 +85,8 @@ export default function Scoreboard() {
     fetchGameInfo()
 
     return () => {
-      supabase.removeChannel(scoreChannel)
-      supabase.removeChannel(gameInfoChannel)
+      scoreChannel.unsubscribe()
+      gameInfoChannel.unsubscribe()
     }
   }, [gameId])
 
