@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import type { ScoreRow, GameInfoRow } from "../types/scoreboard"
-import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
+import type { ScoreRow } from "../types/scoreboard"
+// import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
 import { SupabaseScoreService } from "../services/SupabaseScoreService"
 
-const gameInfoService = new SupabaseGameinfoService();
+// const gameInfoService = new SupabaseGameinfoService();
 const scoreService = new SupabaseScoreService();
  
 
 export default function ScoreControl() {
     const { gameId } = useParams<{ gameId: string }>()
     const [score, setScore] = useState<ScoreRow | null>(null)
-    const [ setGameInfo] = useState<GameInfoRow | null>(null)
+    // const [ setGameInfo] = useState<GameInfoRow | null>(null)
 
     // 이닝 조작
     const handleInningChange = async (increment: boolean) => {
@@ -122,12 +122,12 @@ export default function ScoreControl() {
                 setScore(data);
             }
         }
-        const fetchGameInfo = async () => {
-            const data = await gameInfoService.getGameInfo(Number(gameId));
-            if (data) {
-                setGameInfo(data);
-            }
-        }
+        // const fetchGameInfo = async () => {
+        //     const data = await gameInfoService.getGameInfo(Number(gameId));
+        //     if (data) {
+        //         setGameInfo(data);
+        //     }
+        // }
 
         const unsubscribeScore = scoreService.subscribeToScoreUpdates((newScore) => {
             if (newScore.game_id === Number(gameId)) {
@@ -135,18 +135,18 @@ export default function ScoreControl() {
             }
         });
 
-        const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
-            if (newGameInfo.game_id === Number(gameId)) {
-                setGameInfo(newGameInfo);
-            }
-        });
+        // const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
+        //     if (newGameInfo.game_id === Number(gameId)) {
+        //         setGameInfo(newGameInfo);
+        //     }
+        // });
 
         fetchScore();
-        fetchGameInfo();
+        // fetchGameInfo();
 
         return () => {
             unsubscribeScore();
-            unsubscribeGameInfo();
+            // unsubscribeGameInfo();
         }
     }, [gameId]);
 
