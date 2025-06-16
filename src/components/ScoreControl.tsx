@@ -6,30 +6,12 @@ import { SupabaseScoreService } from "../services/SupabaseScoreService"
 
 const gameInfoService = new SupabaseGameinfoService();
 const scoreService = new SupabaseScoreService();
-  
-  // 베이스 다이아몬드 표시 컴포넌트 (빨간 사각형, 2배 크기)
-  function BaseDiamond({ runners }: { runners: [boolean, boolean, boolean] }) {
-    // runners: [1루, 2루, 3루]
-    return (
-      <div className="flex flex-col items-center">
-        {/* 다이아몬드 */}
-        <div className="w-38 h-30 relative">
-          { /* 1루 */}
-          <div className={`w-12 h-12 left-[47.57px] top-[55px] absolute origin-top-left -rotate-45 ${runners[0] ? 'bg-orange-500' : 'bg-gray-300'}`} />
-          { /* 2루 */}
-          <div className={`w-12 h-12 left-[10.5px] top-[94px] absolute origin-top-left -rotate-45 ${runners[1] ? 'bg-orange-500' : 'bg-gray-300'}`} />
-          { /* 3루 */}
-          <div className={`w-12 h-12 left-[85px] top-[94px] absolute origin-top-left -rotate-45 ${runners[2] ? 'bg-orange-500' : 'bg-gray-300'}`} />
-        </div>
-      
-      </div>
-    );
-  }
+ 
 
 export default function ScoreControl() {
     const { gameId } = useParams<{ gameId: string }>()
     const [score, setScore] = useState<ScoreRow | null>(null)
-    const [gameInfo, setGameInfo] = useState<GameInfoRow | null>(null)
+    const [ setGameInfo] = useState<GameInfoRow | null>(null)
 
     // 이닝 조작
     const handleInningChange = async (increment: boolean) => {
