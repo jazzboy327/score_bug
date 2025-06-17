@@ -46,4 +46,30 @@ export class SupabaseScoreService implements ScoreService {
         if (error) throw error;
         return data;
     }
+
+    async createScore(gameId: number): Promise<ScoreRow | null> {
+        console.log("createScore", gameId);
+        const defaultScore: Omit<ScoreRow, 'id' | 'created_at' | 'updated_at'> = {
+            game_id: gameId,
+            inning: 1,
+            is_top: true,
+            h_score: 0,
+            a_score: 0,
+            s_count: 0,
+            b_count: 0,
+            o_count: 0,
+            is_first: false,
+            is_second: false,
+            is_third: false
+        };
+
+        const { data, error } = await supabase
+            .from('scores')
+            .insert(defaultScore)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
 }

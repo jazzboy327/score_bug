@@ -167,7 +167,7 @@ export default function ScoreControl() {
           <div className="flex flex-row items-start justify-center mb-1 mt-3">
             {/* 이닝 */}
             <div className="flex flex-col items-center justify-center mr-10">
-              <div className="text-white text-2xl font-semibold mb-3">점수</div>
+              <div className="text-white text-2xl font-semibold mb-3">스코어</div>
               <div className="flex flex-row">
                 <div className="text-white text-3xl font-semibold mb-2">{a_score} : {h_score}</div>
               </div>

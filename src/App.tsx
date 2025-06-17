@@ -3,14 +3,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Scoreboard from "./components/Scoreboard"
 import AdminPanel from "./components/AdminPanel"
 import ScoreControl from "./components/ScoreControl"
+import GameForm from "./components/GameForm"
 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<AdminPanel />} />
+        <Route path="/admin" element={<AdminPanel />} />
+
+        <Route path="/register" element={<GameForm mode="create" />} />
+        <Route path="/edit/:gameId" element={<GameForm mode="edit" />} />
         <Route path="/overlay/:gameId" element={<Scoreboard />} />
-        <Route path="/admin/:gameId" element={<AdminPanel />} />
         <Route path="/control/:gameId" element={<ScoreControl />} />
         <Route path="/overlay2/:gameId" element={<Scoreboard />} />
       </Routes>

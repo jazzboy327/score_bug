@@ -21,18 +21,24 @@ export interface GameInfoRow {
   date_time: string;
   home_team: string;
   away_team: string;
+  field: string;
+  is_live: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface GameInfoService {
   subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void;
-  updateGameInfo(gameInfo: GameInfoRow): Promise<void>;
+  updateGameInfo(gameInfo: GameInfoRow): Promise<{success: boolean, error?: string}>;
   getGameInfo(gameId: number): Promise<GameInfoRow | null>;
+  createGameInfo(gameInfo: Omit<GameInfoRow, 'game_id' | 'created_at' | 'updated_at'>): Promise<GameInfoRow | null>;
+  getAllGames(): Promise<GameInfoRow[]>;
+  deleteGame(gameId: number): Promise<void>;
 }
 
 export interface ScoreService {
   subscribeToScoreUpdates(callback: (score: ScoreRow) => void): () => void;
   updateLiveScore(liveScore: ScoreRow): Promise<void>;
   getScore(gameId: number): Promise<ScoreRow | null>;
+  createScore(gameId: number): Promise<ScoreRow | null>;
 }
