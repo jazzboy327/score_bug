@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import { SupabaseScoreService } from '../services/SupabaseScoreService'
-import type { GameInfoRow, ScoreRow } from '../types/scoreboard'
+import type { GameInfoRow } from '../types/scoreboard'
 
 const gameInfoService = new SupabaseGameinfoService()
 const scoreService = new SupabaseScoreService()
