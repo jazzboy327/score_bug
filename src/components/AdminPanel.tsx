@@ -2,17 +2,26 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoRow } from '../types/scoreboard'
-
+import { SupabaseJwtproviderService } from '../services/SupabaeJwtproviderService'
 const gameInfoService = new SupabaseGameinfoService()
 
-export default function AdminPanel() {
+const jwtPayloadService = new SupabaseJwtproviderService()
+
+export default  function AdminPanel(){
     const navigate = useNavigate()
 
-    const username = localStorage.getItem('username')
-    if (!username) {
+    const token = localStorage.getItem('sb-ansxsldpzaiqomeuwsuo-auth-token') || ''
+    if (!token) {
         navigate('/')
+    }else{
+        const isExpired = async () => {
+            const isExpired = await jwtPayloadService.isTokenExpired()
+            if (isExpired) {
+                await jwtPayloadService.refreshToken()
+            }
+        }
+        isExpired()
     }
-
     
     const [games, setGames] = useState<GameInfoRow[]>([])
     const [isLoading, setIsLoading] = useState(true)

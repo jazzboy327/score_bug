@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Login() {
     const navigate = useNavigate()
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: ''
     })
     const [isLoading, setIsLoading] = useState(false)
@@ -25,21 +26,36 @@ export default function Login() {
 
         try {
             // TODO: 실제 로그인 로직 구현
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password
+            })
+            console.log(data)
+            if (error) {
+                setError(error.message)
+            } else {
+                
+                localStorage.setItem('isLoggedIn', 'true')
+                localStorage.setItem('username', data.user?.email || '')
+                navigate('/admin')
+            }
             // 임시로 간단한 검증
-            if (formData.username === 'admin' && formData.password === 'admin') {
+            if (formData.email === 'admin' && formData.password === 'admin') {
                 // 로그인 성공
                 localStorage.setItem('isLoggedIn', 'true')
-                localStorage.setItem('username', formData.username)
+                localStorage.setItem('username', formData.email)
                 navigate('/admin')
             } else {
                 setError('아이디 또는 비밀번호가 올바르지 않습니다.')
             }
+            
         } catch (err) {
             console.error('Login failed:', err)
             setError('로그인에 실패했습니다.')
         } finally {
             setIsLoading(false)
         }
+
     }
 
     return (
@@ -66,18 +82,18 @@ export default function Login() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* 아이디 입력 */}
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                                아이디
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                이메일
                             </label>
                             <input
                                 type="text"
-                                id="username"
-                                name="username"
-                                value={formData.username}
+                                id="email"
+                                name="email"
+                                value={formData.email}
                                 onChange={handleInputChange}
                                 required
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="아이디를 입력하세요"
+                                placeholder="이메일 입력하세요"
                             />
                         </div>
 

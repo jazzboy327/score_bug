@@ -17,36 +17,47 @@ export default function ScoreControl() {
     const handleInningChange = async (increment: boolean) => {
         if (!score) return;
         const updatedScore = { ...score };
+        
         if (increment) {
-            if (score.inning < 9) {
-                updatedScore.inning = score.inning + 1;
-                updatedScore.is_top = true;
+            // 현재 초(상)이면 말(하)로 변경
+            if (score.is_top) {
+                updatedScore.is_top = false;
+            } else {
+                // 현재 말(하)이면 다음 이닝 초(상)로 변경
+                if (score.inning < 9) {
+                    updatedScore.inning = score.inning + 1;
+                    updatedScore.is_top = true;
+                }
             }
         } else {
-            if (score.inning > 1) {
-                updatedScore.inning = score.inning - 1;
+            // 현재 말(하)이면 초(상)로 변경
+            if (!score.is_top) {
                 updatedScore.is_top = true;
+            } else {
+                // 현재 초(상)이면 이전 이닝 말(하)로 변경
+                if (score.inning > 1) {
+                    updatedScore.inning = score.inning - 1;
+                    updatedScore.is_top = false;
+                }
             }
         }
+        
+        // 이닝이 변경되거나 초/말이 바뀔 때 카운트와 베이스 초기화
+        if (updatedScore.inning !== score.inning || updatedScore.is_top !== score.is_top) {
+            updatedScore.b_count = 0;
+            updatedScore.s_count = 0;
+            updatedScore.o_count = 0;
+            updatedScore.is_first = false;
+            updatedScore.is_second = false;
+            updatedScore.is_third = false;
+        }
+        
         try {
             await scoreService.updateLiveScore(updatedScore);
             setScore(updatedScore);
         } catch (error) {
             console.error('Failed to update inning:', error);
             console.log(updatedScore);
-        }
-    };
-
-    // 이닝 초/말 토글
-    const handleInningTopBottomToggle = async () => {
-        if (!score) return;
-        console.log(score);
-        const updatedScore = { ...score, is_top: !score.is_top };
-        try {
-            await scoreService.updateLiveScore(updatedScore);
-            setScore(updatedScore);
-        } catch (error) {
-            console.error('Failed to toggle inning:', error);
         }
     };
 
@@ -229,19 +240,13 @@ export default function ScoreControl() {
                   <div className="flex flex-row justify-center w-full">
                       <button 
                           onClick={() => handleInningChange(true)}
-                          className="w-[30%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
                       >
                           +
                       </button>
                       <button 
-                          onClick={handleInningTopBottomToggle}
-                          className="w-[30%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
-                      >
-                          {isTop ? '초' : '말'}
-                      </button>
-                      <button 
                           onClick={() => handleInningChange(false)}
-                          className="w-[30%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
                       >
                           -
                       </button>
