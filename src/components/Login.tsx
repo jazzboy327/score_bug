@@ -48,20 +48,13 @@ export default function Login() {
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     {/* 야구공 이미지 */}
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                            {/* 야구공 이모지 또는 SVG 아이콘 */}
-                            <span className="text-4xl">⚾</span>
+                        <div className="w-85 h-85  flex items-center justify-center overflow-hidden">
+                            <img 
+                                src="/src/assets/mainlogo.png" 
+                                alt="베이스볼 스코어보드 로고" 
+                                className="w-full h-full object-cover"
+                            />
                         </div>
-                    </div>
-
-                    {/* 제목 */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                            베이스볼
-                        </h1>
-                        <h2 className="text-2xl font-semibold text-blue-600">
-                            스코어보드
-                        </h2>
                     </div>
 
                     {error && (
