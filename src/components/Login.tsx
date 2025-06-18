@@ -50,7 +50,7 @@ export default function Login() {
                     <div className="flex justify-center mb-6">
                         <div className="w-85 h-85  flex items-center justify-center overflow-hidden">
                             <img 
-                                src="/src/assets/mainlogo.png" 
+                                src="/mainlogo.png" 
                                 alt="베이스볼 스코어보드 로고" 
                                 className="w-full h-full object-cover"
                             />
