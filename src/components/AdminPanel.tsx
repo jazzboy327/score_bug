@@ -7,6 +7,13 @@ const gameInfoService = new SupabaseGameinfoService()
 
 export default function AdminPanel() {
     const navigate = useNavigate()
+
+    const username = localStorage.getItem('username')
+    if (!username) {
+        navigate('/')
+    }
+
+    
     const [games, setGames] = useState<GameInfoRow[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
@@ -108,124 +115,123 @@ export default function AdminPanel() {
     }
 
     return (
-        <div className="min-h-screen bg-[#222] p-6">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-6">
+            <div className="max-w-7xl mx-auto">
                 {/* 헤더 */}
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-white">관리자 화면</h1>
+                    <div>
+                        <h1 className="text-4xl font-bold text-white mb-2">관리자 화면</h1>
+                        <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
+                    </div>
                     <button
                         onClick={handleCreateGame}
-                        className="bg-[#00c853] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#00a844] transition-colors"
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
-                        New Game
+                        + 새 경기 등록
                     </button>
                 </div>
 
                 {error && (
-                    <div className="bg-red-500 text-white p-4 rounded-lg mb-6">
+                    <div className="bg-red-500 text-white p-4 rounded-xl mb-6 shadow-lg">
                         {error}
                     </div>
                 )}
 
                 {/* 경기 목록 */}
-                <div className="bg-[#333] rounded-lg shadow-lg overflow-hidden">
-                    <div className="px-6 py-4 border-b border-[#555]">
-                        <h2 className="text-xl font-semibold text-white">경기 목록</h2>
-                    </div>
+                <div className="mb-6">
+                    <h2 className="text-2xl font-semibold text-white mb-6">경기 목록</h2>
                     
                     {games.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <p className="text-gray-400 text-lg">등록된 경기가 없습니다.</p>
+                        <div className="bg-gray-800 rounded-2xl p-12 text-center shadow-lg">
+                            <div className="text-6xl mb-4">⚾</div>
+                            <p className="text-gray-400 text-xl">등록된 경기가 없습니다.</p>
+                            <p className="text-gray-500 mt-2">새 경기를 등록해보세요!</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-[#444]">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            대회명
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            팀
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            경기장
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            날짜/시간
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            상태
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            관리
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-[#333] divide-y divide-[#555]">
-                                    {games.map((game) => (
-                                        <tr key={game.game_id} className="hover:bg-[#444] transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-white">
-                                                    {game.title}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {game.away_team} vs {game.home_team}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {game.field}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {formatDateTime(game.date_time)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {games.map((game) => (
+                                <div key={game.game_id} className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700">
+                                    {/* 카드 헤더 */}
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-bold text-white mb-1 truncate">
+                                                {game.title}
+                                            </h3>
+                                            <div className="flex items-center space-x-2">
                                                 {getStatusBadge(game.is_live)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() => handleEditGame(game.game_id)}
-                                                        className="text-[#00c853] hover:text-[#00a844] transition-colors"
-                                                    >
-                                                        Edit⚙️ ┃
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleOverlayView(game.game_id)}
-                                                        className="text-blue-400 hover:text-blue-300 transition-colors"
-                                                    >
-                                                        Score↗ ┃
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleCopyUrl(game.game_id)}
-                                                        className="text-yellow-400 hover:text-yellow-300 transition-colors"
-                                                    >
-                                                        URL🔗 ┃
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleOpenController(game.game_id)}
-                                                        className="text-purple-400 hover:text-purple-300 transition-colors"
-                                                    >
-                                                        Control↗ ┃
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteGame(game.game_id)}
-                                                        className="text-red-500 hover:text-red-400 transition-colors"
-                                                    >
-                                                        Delete🗑️
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                <span className="text-sm text-gray-400">
+                                                    {formatDateTime(game.date_time)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 팀 정보 */}
+                                    <div className="bg-gray-700 rounded-xl p-4 mb-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-center flex-1">
+                                                <div className="text-lg font-semibold text-white">{game.away_team}</div>
+                                                <div className="text-xs text-gray-400">원정팀</div>
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-400 mx-4">VS</div>
+                                            <div className="text-center flex-1">
+                                                <div className="text-lg font-semibold text-white">{game.home_team}</div>
+                                                <div className="text-xs text-gray-400">홈팀</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 경기장 정보 */}
+                                    <div className="mb-6">
+                                        <div className="flex items-center text-gray-300 mb-2">
+                                            <span className="text-lg mr-2">🏟️</span>
+                                            <span className="font-medium">경기장</span>
+                                        </div>
+                                        <p className="text-white font-semibold">{game.field}</p>
+                                    </div>
+
+                                    {/* 액션 버튼들 */}
+                                    <div className="space-y-3">
+                                        {/* 주요 액션 */}
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleOverlayView(game.game_id)}
+                                                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm"
+                                            >
+                                                📺 스코어보드
+                                            </button>
+                                            <button
+                                                onClick={() => handleOpenController(game.game_id)}
+                                                className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm"
+                                            >
+                                                🎮 컨트롤러
+                                            </button>
+                                        </div>
+
+                                        {/* 보조 액션 */}
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleEditGame(game.game_id)}
+                                                className="flex-1 bg-gray-700 text-white py-2 px-3 rounded-lg font-medium hover:bg-gray-600 transition-colors text-sm"
+                                            >
+                                                ✏️ 수정
+                                            </button>
+                                            <button
+                                                onClick={() => handleCopyUrl(game.game_id)}
+                                                className="flex-1 bg-gray-700 text-white py-2 px-3 rounded-lg font-medium hover:bg-gray-600 transition-colors text-sm"
+                                            >
+                                                🔗 URL복사
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteGame(game.game_id)}
+                                                className="flex-1 bg-red-600 text-white py-2 px-3 rounded-lg font-medium hover:bg-red-700 transition-colors text-sm"
+                                            >
+                                                🗑️ 삭제
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

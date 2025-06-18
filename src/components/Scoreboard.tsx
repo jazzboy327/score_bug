@@ -100,18 +100,18 @@ export default function Scoreboard() {
     <div className="bg-gray-100 w-[750px] p-4 font-sans text-xl rounded shadow-md mx-auto mt-8">
       {/* 상단: 대회명 */}
       <div className="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
-        <span className="text-gray-800 font-semibold text-3xl">{gameTitle}</span>
+        <span className="text-gray-800 font-semibold text-3xl truncate max-w-full block">{gameTitle}</span>
       </div>
       {/* 중간: 점수판 + 베이스/이닝 */}
       <div className="flex items-center space-x-8">
         {/* 점수판 */}
         <div className="bg-white rounded overflow-hidden border border-gray-300 w-[520px]">
           <div className="flex justify-between px-12 py-6 bg-gray-700 text-white">
-            <span className="text-3xl">{awayTeam}</span>
+            <span className="text-6xl truncate max-w-full block">{awayTeam}</span>
             <span className="font-bold text-6xl">{awayScore}</span>
           </div>
           <div className="flex justify-between px-12 py-6 bg-blue-600 text-white">
-            <span className="text-3xl">{homeTeam}</span>
+            <span className="text-6xl truncate max-w-full block">{homeTeam}</span>
             <span className="font-bold text-6xl">{homeScore}</span>
           </div>
         </div>
