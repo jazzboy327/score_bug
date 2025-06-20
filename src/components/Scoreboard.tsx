@@ -43,11 +43,11 @@ function BaseDiamondB({ runners }: { runners: [boolean, boolean, boolean] }) {
       {/* 다이아몬드 */}
       <div className="w-25  relative">
         { /* 2루 */}
-        <div className={`w-5 h-5 left-[45px] top-[30px] absolute origin-top-left -rotate-45 ${runners[1] ? 'bg-orange-500' : 'bg-gray-300'}`} />
+        <div className={`w-5 h-5 left-[45px] top-[25px] absolute origin-top-left -rotate-45 ${runners[1] ? 'bg-orange-500' : 'bg-gray-300'}`} />
         { /* 3루 */}
-        <div className={`w-5 h-5 left-[25px] top-[50px] absolute origin-top-left -rotate-45 ${runners[2] ? 'bg-orange-500' : 'bg-gray-300'}`} />
+        <div className={`w-5 h-5 left-[25px] top-[45px] absolute origin-top-left -rotate-45 ${runners[2] ? 'bg-orange-500' : 'bg-gray-300'}`} />
         { /* 1루 */}
-        <div className={`w-5 h-5 left-[65px] top-[50px] absolute origin-top-left -rotate-45 ${runners[0] ? 'bg-orange-500' : 'bg-gray-300'}`} />
+        <div className={`w-5 h-5 left-[65px] top-[45px] absolute origin-top-left -rotate-45 ${runners[0] ? 'bg-orange-500' : 'bg-gray-300'}`} />
       </div>
     </div>
   );
@@ -194,10 +194,10 @@ function ScoreboardTemplateB({
   oCount: number
 }) {
   return (
-      <div className="flex items-center justify-between  bg-white[0%] w-full  font-sans text-xl h-[80px]">
+      <div className="flex items-center justify-between  bg-transparent w-full  font-sans text-xl h-[80px]">
         {/* 타이틀 */}
-        <div className="flex-shrink-0">
-          <span className="text-black font-bold text-2xl ml-5  mr-5">{gameTitle}</span>
+        <div className="flex-shrink-0 flex items-center justify-center h-full">
+          <span className="text-black font-bold text-2xl ml-5 mr-5">{gameTitle}</span>
         </div>
         
         {/* 어웨이팀명 점수 */}
