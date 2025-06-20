@@ -1,5 +1,5 @@
 import { supabase } from "../utils/supabaseClient";
-import type { GameInfoRow, GameInfoService } from '../types/scoreboard';
+import type { GameInfoRow, GameInfoService, GameInfoWithScore } from '../types/scoreboard';
 
 export class SupabaseGameinfoService implements GameInfoService {
     subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void {
@@ -19,6 +19,8 @@ export class SupabaseGameinfoService implements GameInfoService {
             date_time: gameInfo.date_time,
             home_team: gameInfo.home_team,
             away_team: gameInfo.away_team,
+            home_bg_color: gameInfo.home_bg_color,
+            away_bg_color: gameInfo.away_bg_color,
             field: gameInfo.field,
             is_live: gameInfo.is_live
           })
@@ -48,6 +50,34 @@ export class SupabaseGameinfoService implements GameInfoService {
 
         if (error) throw error;
         return data || [];
+    }
+
+    async getAllGamesWithScores(): Promise<GameInfoWithScore[]> {
+        const { data, error } = await supabase
+            .from('game_info')
+            .select(`
+                *,
+                scores!inner(
+                    h_score,
+                    a_score,
+                    inning,
+                    is_top
+                )
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        // Transform the data to match our interface
+        return (data || []).map(game => ({
+            ...game,
+            current_score: game.scores?.[0] ? {
+                h_score: game.scores[0].h_score,
+                a_score: game.scores[0].a_score,
+                inning: game.scores[0].inning,
+                is_top: game.scores[0].is_top
+            } : undefined
+        }));
     }
 
     async createGameInfo(gameInfo: Omit<GameInfoRow, 'game_id' | 'created_at' | 'updated_at'>): Promise<GameInfoRow | null> {

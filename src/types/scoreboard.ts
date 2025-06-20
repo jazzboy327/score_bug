@@ -20,11 +20,22 @@ export interface GameInfoRow {
   title: string;
   date_time: string;
   home_team: string;
+  home_bg_color: string;
   away_team: string;
+  away_bg_color: string;
   field: string;
   is_live: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface GameInfoWithScore extends GameInfoRow {
+  current_score?: {
+    h_score: number;
+    a_score: number;
+    inning: number;
+    is_top: boolean;
+  };
 }
 
 export interface GameInfoService {
@@ -33,6 +44,7 @@ export interface GameInfoService {
   getGameInfo(gameId: number): Promise<GameInfoRow | null>;
   createGameInfo(gameInfo: Omit<GameInfoRow, 'game_id' | 'created_at' | 'updated_at'>): Promise<GameInfoRow | null>;
   getAllGames(): Promise<GameInfoRow[]>;
+  getAllGamesWithScores(): Promise<GameInfoWithScore[]>;
   deleteGame(gameId: number): Promise<void>;
 }
 

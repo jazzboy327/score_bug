@@ -11,6 +11,60 @@ interface GameFormProps {
     mode?: 'create' | 'edit'
 }
 
+// 커스텀 Time Picker 컴포넌트
+interface TimePickerProps {
+    value: string
+    onChange: (time: string) => void
+    className?: string
+}
+
+function TimePicker({ value, onChange, className = '' }: TimePickerProps) {
+    const [selectedHour, selectedMinute] = value ? value.split(':').map(Number) : [0, 0]
+    
+    const hours = Array.from({ length: 24 }, (_, i) => i)
+    const minutes = Array.from({ length: 6 }, (_, i) => i * 10) // 10분 단위
+    
+    const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const hour = parseInt(e.target.value)
+        const timeString = `${hour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`
+        onChange(timeString)
+    }
+    
+    const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const minute = parseInt(e.target.value)
+        const timeString = `${selectedHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+        onChange(timeString)
+    }
+    
+    return (
+        <div className="flex gap-2">
+            <select
+                value={selectedHour}
+                onChange={handleHourChange}
+                className={`flex-1 px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors ${className}`}
+            >
+                {hours.map(hour => (
+                    <option key={hour} value={hour}>
+                        {hour.toString().padStart(2, '0')}시
+                    </option>
+                ))}
+            </select>
+            
+            <select
+                value={selectedMinute}
+                onChange={handleMinuteChange}
+                className={`flex-1 px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors ${className}`}
+            >
+                {minutes.map(minute => (
+                    <option key={minute} value={minute}>
+                        {minute.toString().padStart(2, '0')}분
+                    </option>
+                ))}
+            </select>
+        </div>
+    )
+}
+
 export default function GameForm({ mode = 'create' }: GameFormProps) {
     const navigate = useNavigate()
     const { gameId } = useParams<{ gameId: string }>()
@@ -64,6 +118,13 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
         }))
     }
 
+    const handleTimeChange = (time: string) => {
+        setFormData(prev => ({
+            ...prev,
+            game_time: time
+        }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
@@ -81,7 +142,9 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     home_team: formData.h_team,
                     date_time: gameDateTime,
                     field: formData.field,
-                    is_live: false
+                    is_live: false,
+                    home_bg_color: '#374151',
+                    away_bg_color: '#f7f7f7'
                 })
 
                 if (newGame) {
@@ -213,16 +276,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                             <label htmlFor="game_time" className="block text-white text-sm font-medium mb-2">
                                 경기 시간 * (10분 단위)
                             </label>
-                            <input
-                                type="time"
-                                id="game_time"
-                                name="game_time"
-                                value={formData.game_time}
-                                onChange={handleInputChange}
-                                step="600"
-                                required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
-                            />
+                            <TimePicker value={formData.game_time} onChange={handleTimeChange} />
                         </div>
 
                         {/* 경기장 */}
