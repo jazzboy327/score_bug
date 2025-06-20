@@ -53,11 +53,11 @@ export default function AdminPanel() {
     }
 
     const handleCreateGame = () => {
-        navigate('/register')
+        navigate('/r')
     }
 
     const handleEditGame = (gameId: number) => {
-        navigate(`/edit/${gameId}`)
+        navigate(`/e/${gameId}`)
     }
 
     const handleDeleteGame = async (gameId: number) => {

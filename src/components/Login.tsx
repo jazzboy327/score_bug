@@ -37,14 +37,14 @@ export default function Login() {
                 
                 localStorage.setItem('isLoggedIn', 'true')
                 localStorage.setItem('username', data.user?.email || '')
-                navigate('/admin')
+                navigate('/a')
             }
             // 임시로 간단한 검증
             if (formData.email === 'admin' && formData.password === 'admin') {
                 // 로그인 성공
                 localStorage.setItem('isLoggedIn', 'true')
                 localStorage.setItem('username', formData.email)
-                navigate('/admin')
+                navigate('/a')
             } else {
                 setError('아이디 또는 비밀번호가 올바르지 않습니다.')
             }

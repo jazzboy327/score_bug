@@ -12,9 +12,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/ad" element={<AdminPanel />} />
-        <Route path="/rg" element={<GameForm mode="create" />} />
-        <Route path="/ed/:gameId" element={<GameForm mode="edit" />} />
+        <Route path="/a" element={<AdminPanel />} />
+        <Route path="/r" element={<GameForm mode="create" />} />
+        <Route path="/e/:gameId" element={<GameForm mode="edit" />} />
         <Route path="/o/:gameId" element={<Scoreboard />} />
         <Route path="/o/:gameId/:template" element={<Scoreboard />} />
         <Route path="/c/:gameId" element={<ScoreControl />} />
