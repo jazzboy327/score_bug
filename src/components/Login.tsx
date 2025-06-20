@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabaseClient'
+import { Appconfig } from '../config'
 
 export default function Login() {
     const navigate = useNavigate()
@@ -37,14 +38,14 @@ export default function Login() {
                 
                 localStorage.setItem('isLoggedIn', 'true')
                 localStorage.setItem('username', data.user?.email || '')
-                navigate('/a')
+                navigate(Appconfig.admin_panel_url)
             }
             // 임시로 간단한 검증
             if (formData.email === 'admin' && formData.password === 'admin') {
                 // 로그인 성공
                 localStorage.setItem('isLoggedIn', 'true')
                 localStorage.setItem('username', formData.email)
-                navigate('/a')
+                navigate(Appconfig.admin_panel_url)
             } else {
                 setError('아이디 또는 비밀번호가 올바르지 않습니다.')
             }

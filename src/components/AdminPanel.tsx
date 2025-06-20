@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { SupabaseJwtproviderService } from '../services/SupabaeJwtproviderService'
+import { Appconfig } from "../config"
 
 // services
 const gameInfoService = new SupabaseGameinfoService()
@@ -53,11 +54,11 @@ export default function AdminPanel() {
     }
 
     const handleCreateGame = () => {
-        navigate('/r')
+        navigate(Appconfig.register_url)
     }
 
     const handleEditGame = (gameId: number) => {
-        navigate(`/e/${gameId}`)
+        navigate(`${Appconfig.edit_url}/${gameId}`)
     }
 
     const handleDeleteGame = async (gameId: number) => {
@@ -74,12 +75,12 @@ export default function AdminPanel() {
     }
 
     const handleOverlayView = (gameId: number, template: 'a' | 'b' = 'a') => {
-        const url = `${window.location.origin}/o/${gameId}/${template}`
+        const url = `${window.location.origin}${Appconfig.scoreboard_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
         window.open(url, '_blank', 'width=1200,height=800')
     }
 
     const handleCopyUrl = (gameId: number, template: 'a' | 'b' = 'a') => {
-        const url = `${window.location.origin}/o/${gameId}/${template}`
+        const url = `${window.location.origin}${Appconfig.scoreboard_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
         navigator.clipboard.writeText(url).then(() => {
             alert('URL이 클립보드에 복사되었습니다!')
         }).catch(() => {
@@ -95,7 +96,7 @@ export default function AdminPanel() {
     }
 
     const handleOpenController = (gameId: number) => {
-        const controllerUrl = `${window.location.origin}/control/${gameId}`
+        const controllerUrl = `${window.location.origin}${Appconfig.controller_url.replace(':gameId', gameId.toString())}`
         window.open(controllerUrl, '_blank', 'width=1200,height=800')
     }
 

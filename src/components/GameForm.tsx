@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import { SupabaseScoreService } from '../services/SupabaseScoreService'
 import type { GameInfoRow } from '../types/scoreboard'
+import { Appconfig } from "../config"
 
 const gameInfoService = new SupabaseGameinfoService()
 const scoreService = new SupabaseScoreService()
@@ -152,12 +153,12 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     try {
                         await scoreService.createScore(Number(newGame.game_id))
                         alert('경기가 성공적으로 등록되었습니다!')
-                        navigate('/a')
+                        navigate(Appconfig.admin_panel_url)
                     } catch (scoreError) {
                         console.error('Failed to create default score:', scoreError)
                         // 게임은 생성되었지만 스코어 생성 실패
                         alert('경기는 등록되었지만 기본 스코어 생성에 실패했습니다.')
-                        navigate('/a')
+                        navigate(Appconfig.admin_panel_url)
                     }
                 }
             } else if (mode === 'edit' && gameId) {
@@ -173,7 +174,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                 } as GameInfoRow)
                 if (updatedGame.success) {
                     alert('경기 정보가 성공적으로 수정되었습니다!')
-                    navigate('/a')
+                    navigate(Appconfig.admin_panel_url)
                 }else{
                     setError('경기 수정에 실패했습니다.')
                 }
@@ -311,7 +312,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                             
                             <button
                                 type="button"
-                                onClick={() => navigate('/a')}
+                                onClick={() => navigate(Appconfig.admin_panel_url)}
                                 className="w-full bg-[#666] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#555] transition-colors"
                             >
                                 취소
