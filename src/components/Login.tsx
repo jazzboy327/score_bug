@@ -5,12 +5,15 @@ import { Appconfig } from '../config'
 
 export default function Login() {
     const navigate = useNavigate()
+    const [showRegisterModal, setShowRegisterModal] = useState(false)
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
@@ -20,43 +23,85 @@ export default function Login() {
         }))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
         setError('')
+        setSuccess('')
 
         try {
-            // TODO: 실제 로그인 로직 구현
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password
             })
-            console.log(data)
+
             if (error) {
                 setError(error.message)
             } else {
-                
                 localStorage.setItem('isLoggedIn', 'true')
                 localStorage.setItem('username', data.user?.email || '')
                 navigate(Appconfig.admin_panel_url)
             }
-            // 임시로 간단한 검증
-            if (formData.email === 'admin' && formData.password === 'admin') {
-                // 로그인 성공
-                localStorage.setItem('isLoggedIn', 'true')
-                localStorage.setItem('username', formData.email)
-                navigate(Appconfig.admin_panel_url)
-            } else {
-                setError('아이디 또는 비밀번호가 올바르지 않습니다.')
-            }
-            
         } catch (err) {
             console.error('Login failed:', err)
             setError('로그인에 실패했습니다.')
         } finally {
             setIsLoading(false)
         }
+    }
 
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setError('')
+        setSuccess('')
+
+        try {
+            if (formData.password !== formData.confirmPassword) {
+                setError('비밀번호가 일치하지 않습니다.')
+                return
+            }
+
+            if (formData.password.length < 6) {
+                setError('비밀번호는 최소 6자 이상이어야 합니다.')
+                return
+            }
+
+            const { error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password
+            })
+
+            if (error) {
+                setError(error.message)
+            } else {
+                setSuccess('회원가입이 완료되었습니다! 이메일을 확인해주세요.')
+                setFormData({ email: '', password: '', confirmPassword: '' })
+                setTimeout(() => {
+                    setShowRegisterModal(false)
+                    setSuccess('')
+                }, 2000)
+            }
+        } catch (err) {
+            console.error('Register failed:', err)
+            setError('회원가입에 실패했습니다.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const openRegisterModal = () => {
+        setShowRegisterModal(true)
+        setFormData({ email: '', password: '', confirmPassword: '' })
+        setError('')
+        setSuccess('')
+    }
+
+    const closeRegisterModal = () => {
+        setShowRegisterModal(false)
+        setFormData({ email: '', password: '', confirmPassword: '' })
+        setError('')
+        setSuccess('')
     }
 
     return (
@@ -65,7 +110,7 @@ export default function Login() {
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     {/* 야구공 이미지 */}
                     <div className="flex justify-center mb-6">
-                        <div className="w-85 h-85  flex items-center justify-center overflow-hidden">
+                        <div className="w-85 h-85 flex items-center justify-center overflow-hidden">
                             <img 
                                 src="/mainlogo.png" 
                                 alt="베이스볼 스코어보드 로고" 
@@ -80,21 +125,21 @@ export default function Login() {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* 아이디 입력 */}
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        {/* 이메일 입력 */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                 이메일
                             </label>
                             <input
-                                type="text"
+                                type="email"
                                 id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
                                 required
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="이메일 입력하세요"
+                                placeholder="이메일을 입력하세요"
                             />
                         </div>
 
@@ -125,14 +170,111 @@ export default function Login() {
                         </button>
                     </form>
 
-                    {/* 개발용 안내 */}
-                    <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center">
-                        <p className="text-sm text-gray-600">
-                            개발용 계정: admin / admin
-                        </p>
+                    {/* 사용자 등록 버튼 */}
+                    <div className="mt-6 text-center">
+                        <button
+                            type="button"
+                            onClick={openRegisterModal}
+                            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        >
+                            계정이 없으신가요? 사용자 등록
+                        </button>
                     </div>
                 </div>
             </div>
+
+            {/* 회원가입 모달 */}
+            {showRegisterModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">사용자 등록</h2>
+                            <button
+                                onClick={closeRegisterModal}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
+                                {error}
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 text-center">
+                                {success}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleRegister} className="space-y-6">
+                            {/* 이메일 입력 */}
+                            <div>
+                                <label htmlFor="modal-email" className="block text-sm font-medium text-gray-700 mb-2">
+                                    이메일
+                                </label>
+                                <input
+                                    type="email"
+                                    id="modal-email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    placeholder="이메일을 입력하세요"
+                                />
+                            </div>
+
+                            {/* 비밀번호 입력 */}
+                            <div>
+                                <label htmlFor="modal-password" className="block text-sm font-medium text-gray-700 mb-2">
+                                    비밀번호
+                                </label>
+                                <input
+                                    type="password"
+                                    id="modal-password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    placeholder="비밀번호를 입력하세요 (최소 6자)"
+                                />
+                            </div>
+
+                            {/* 비밀번호 확인 */}
+                            <div>
+                                <label htmlFor="modal-confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                                    비밀번호 확인
+                                </label>
+                                <input
+                                    type="password"
+                                    id="modal-confirmPassword"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    placeholder="비밀번호를 다시 입력하세요"
+                                />
+                            </div>
+
+                            {/* 회원가입 버튼 */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {isLoading ? '회원가입 중...' : '회원가입'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 } 
