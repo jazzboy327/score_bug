@@ -75,12 +75,12 @@ export default function AdminPanel() {
     }
 
     const handleOverlayView = (gameId: number, template: 'a' | 'b' = 'a') => {
-        const url = `${window.location.origin}${Appconfig.scoreboard_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
+        const url = `${window.location.origin}${Appconfig.scoreboardA_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
         window.open(url, '_blank', 'width=1200,height=800')
     }
 
     const handleCopyUrl = (gameId: number, template: 'a' | 'b' = 'a') => {
-        const url = `${window.location.origin}${Appconfig.scoreboard_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
+        const url = `${window.location.origin}${Appconfig.scoreboardA_template_url.replace(':gameId', gameId.toString()).replace(':template', template)}`
         navigator.clipboard.writeText(url).then(() => {
             alert('URL이 클립보드에 복사되었습니다!')
         }).catch(() => {
