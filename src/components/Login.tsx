@@ -110,11 +110,11 @@ export default function Login() {
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     {/* 야구공 이미지 */}
                     <div className="flex justify-center mb-6">
-                        <div className="w-85 h-60 flex items-center justify-center overflow-hidden">
+                        <div className="w-85 h-50 flex items-center justify-center overflow-hidden">
                             <img 
                                 src="/mainlogo.png" 
                                 alt="베이스볼 스코어보드 로고" 
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover scale-80"
                             />
                         </div>
                     </div>
