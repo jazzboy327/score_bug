@@ -17,6 +17,7 @@ export interface ScoreRow {
 
 export interface GameInfoRow {
   game_id: number;
+  user_id: string;
   title: string;
   date_time: string;
   home_team: string;

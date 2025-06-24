@@ -1,7 +1,16 @@
 import { supabase } from "../utils/supabaseClient";
 import type { GameInfoRow, GameInfoService, GameInfoWithScore } from '../types/scoreboard';
+import { SupabaseJwtproviderService } from "./SupabaeJwtproviderService";
+
+const jwtPayloadService = new SupabaseJwtproviderService();
 
 export class SupabaseGameinfoService implements GameInfoService {
+    async getUserId(): Promise<string> {
+        const jwtPayload = await jwtPayloadService.getJwtPayload()
+        console.log("jwtPayload.sub", jwtPayload.sub)
+        return jwtPayload.sub
+    }
+
     subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void {
         const channel = supabase.channel('game_info').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_info' }, (payload) => {
             callback(payload.new as GameInfoRow);
@@ -46,12 +55,13 @@ export class SupabaseGameinfoService implements GameInfoService {
         const { data, error } = await supabase
             .from('game_info')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .eq('user_id', await this.getUserId());
 
         if (error) throw error;
         return data || [];
     }
-
+    
     async getAllGamesWithScores(): Promise<GameInfoWithScore[]> {
         const { data, error } = await supabase
             .from('game_info')

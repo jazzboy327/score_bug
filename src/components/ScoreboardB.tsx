@@ -15,7 +15,7 @@ function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolea
       : color === 'yellow'
       ? 'bg-yellow-500'
       : 'bg-green-400'
-    : 'bg-gray-300'
+    : 'bg-white'
   return <span className={`inline-block rounded-full mx-1 ${size} ${colorClass}`} />
 }
 
@@ -116,10 +116,10 @@ export default function ScoreboardB() {
             {/*  어웨이 / 홈 팀 점수 */}
             <div style={{ backgroundColor: aBgColor }} className={`flex w-[50%] font-semibold items-center ${aTextColor}`}>
               <div className="text-xl text-center px-2 py-1 w-[70%]">{awayTeam}</div>
-              <div className="text-xl font-bold text-center w-[30%]">{awayScore}</div>
+              <div className="text-2xl font-bold text-center w-[30%]">{awayScore}</div>
             </div>
             <div style={{ backgroundColor: hBgColor }} className={`flex w-[50%] font-semibold items-center ${hTextColor}`}>
-              <div className="text-xl font-bold text-center w-[30%]">{homeScore}</div>
+              <div className="text-2xl font-bold text-center w-[30%]">{homeScore}</div>
               <div className="text-xl text-center px-2 py-1 w-[70%]">{homeTeam}</div>
             </div>
           </div>

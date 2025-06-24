@@ -2,30 +2,15 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoWithScore } from '../types/scoreboard'
-import { SupabaseJwtproviderService } from '../services/SupabaeJwtproviderService'
 import { Appconfig } from "../config"
 import { getisLive } from '../utils/dateUtils'
-
+import { useAuth } from '../hooks/useAuth'
 // services
 const gameInfoService = new SupabaseGameinfoService()
-const jwtPayloadService = new SupabaseJwtproviderService()
-
 // default export
 export default function AdminPanel() {
     const navigate = useNavigate()
-
-    const token = localStorage.getItem('sb-ansxsldpzaiqomeuwsuo-auth-token') || ''
-    if (!token) {
-        navigate('/')
-    }else{
-        const isExpired = async () => {
-            const isExpired = await jwtPayloadService.isTokenExpired()
-            if (isExpired) {
-                await jwtPayloadService.refreshToken()
-            }
-        }
-        isExpired()
-    }
+    useAuth() // 인증 처리는 훅에서 자동으로 처리됨
     
     const [games, setGames] = useState<GameInfoWithScore[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -167,9 +152,13 @@ export default function AdminPanel() {
             <span className="px-2 py-1 text-xs font-medium bg-gray-500 text-white rounded-full">
                 대기중
             </span>
-        ) : (
+        ) : !_isLive || live_check === "end" ? (
             <span className="px-2 py-1 text-xs font-medium bg-gray-500 text-white rounded-full">
                 종료
+            </span>
+        ) : (
+            <span className="px-2 py-1 text-xs font-medium bg-gray-500 text-white rounded-full">
+                오류
             </span>
         )
     }
@@ -188,14 +177,14 @@ export default function AdminPanel() {
                 {/* 헤더 */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-2">관리자 화면</h1>
+                        <h1 className="text-4xl font-bold text-white mb-2">경기 목록</h1>
                         <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
                     </div>
                     <button
                         onClick={handleCreateGame}
-                        className="w-40 h-15 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        className="w-30 h-10 bg-gradient-to-r from-green-500 to-green-600 text-sm text-white   hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
-                        + 새 경기 등록
+                        + New Game
                     </button>
                 </div>
 
@@ -206,9 +195,7 @@ export default function AdminPanel() {
                 )}
 
                 {/* 경기 목록 */}
-                <div className="mb-6">
-                    <h2 className="text-2xl font-semibold text-white mb-6">경기 목록</h2>
-                    
+                <div className="mb-6">                    
                     {games.length === 0 ? (
                         <div className="bg-gray-800 rounded-2xl p-12 text-center shadow-lg">
                             <div className="text-6xl mb-4">⚾</div>

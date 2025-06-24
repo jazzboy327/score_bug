@@ -6,4 +6,7 @@ export const Appconfig = {
     login_url: '/',
     register_url: '/r',
     edit_url: '/e/:gameId',
+
+    // supabase auth token key (프로젝트 별로 이름이 다르다)
+    auth_token_key: 'sb-ansxsldpzaiqomeuwsuo-auth-token',
 }

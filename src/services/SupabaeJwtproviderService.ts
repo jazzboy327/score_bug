@@ -1,11 +1,12 @@
 import { supabase } from "../utils/supabaseClient";
 import type { JwtPayload, JwtPayloadService } from '../types/jwtPayload'
 import { jwtDecode } from "jwt-decode";
+import { Appconfig } from "../config";
 
 export class SupabaseJwtproviderService implements JwtPayloadService {
     // local storage에 저장된 토큰을 가져옴
     async getJwtPayload(): Promise<JwtPayload> {
-        const token = localStorage.getItem('sb-ansxsldpzaiqomeuwsuo-auth-token')
+        const token = localStorage.getItem(Appconfig.auth_token_key)
         if (!token) {
             throw new Error('No token found')
         }
@@ -20,7 +21,7 @@ export class SupabaseJwtproviderService implements JwtPayloadService {
 
     async refreshToken(): Promise<void> {
         const { data: { session } } = await supabase.auth.refreshSession()
-        localStorage.setItem('sb-ansxsldpzaiqomeuwsuo-auth-token', session?.access_token || '')
+        localStorage.setItem(Appconfig.auth_token_key, session?.access_token || '')
     }
     
 }

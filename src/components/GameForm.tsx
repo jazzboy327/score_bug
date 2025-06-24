@@ -86,6 +86,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
             loadGameData()
         }
     }, [mode, gameId])
+    
 
     const loadGameData = async () => {
         try {
@@ -138,12 +139,13 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
             if (mode === 'create') {
                 // 새 게임 생성
                 const newGame = await gameInfoService.createGameInfo({
+                    user_id: await gameInfoService.getUserId(),
                     title: formData.title,
                     away_team: formData.a_team,
                     home_team: formData.h_team,
                     date_time: gameDateTime,
                     field: formData.field,
-                    is_live: false,
+                    is_live: true,
                     home_bg_color: '#374151',
                     away_bg_color: '#f7f7f7'
                 })
