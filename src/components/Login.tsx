@@ -281,7 +281,7 @@ export default function Login() {
             )}
             
             {/* 카피라이트 */}
-            <div className="fixed bottom-8 items-center transform ">
+            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
                 <div className="text-white text-xs text-center opacity-70 px-4">
                     © 2025 Sco-B System. All rights reserved.
                 </div>
