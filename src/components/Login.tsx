@@ -110,7 +110,7 @@ export default function Login() {
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     {/* 야구공 이미지 */}
                     <div className="flex justify-center mb-6">
-                        <div className="w-85 h-85 flex items-center justify-center overflow-hidden">
+                        <div className="w-85 h-60 flex items-center justify-center overflow-hidden">
                             <img 
                                 src="/mainlogo.png" 
                                 alt="베이스볼 스코어보드 로고" 
@@ -158,6 +158,10 @@ export default function Login() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                 placeholder="비밀번호를 입력하세요"
                             />
+                        </div>
+                        <div className="flex items-center">
+                            <input id="remember" type="checkbox" />
+                            <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">Remember me</label>
                         </div>
 
                         {/* 로그인 버튼 */}
