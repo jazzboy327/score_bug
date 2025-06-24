@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { Appconfig } from "../config"
-import { getisLive } from '../utils/dateUtils'
 import { useAuth } from '../hooks/useAuth'
 import { GameCard } from './GameCard' 
 
@@ -130,7 +129,7 @@ export default function AdminPanel() {
             alert('테마 변경에 실패했습니다.')
         }
     }
-    
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#222] flex items-center justify-center">
