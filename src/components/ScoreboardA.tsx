@@ -43,14 +43,14 @@ export default function ScoreboardA() {
     const fetchScore = async () => {
       const data = await scoreService.getScore(Number(gameId));
       if (data) {
-        console.log("fetchScore")
+        console.log("fetchScore", data)
         setScore(data)
       }
     }
     const fetchGameInfo = async () => {
       const data = await gameInfoService.getGameInfo(Number(gameId));
       if (data) {
-        console.log("fetchGameInfo")
+        console.log("fetchGameInfo", data)
         setGameInfo(data)
       }
     }

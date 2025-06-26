@@ -40,6 +40,7 @@ export class SupabaseGameinfoService implements GameInfoService {
     }
       
     async getGameInfo(gameId: number): Promise<GameInfoRow | null> {
+        console.log("getGameInfo", gameId)
         const { data, error } = await supabase
             .from('game_info')
             .select('*')
