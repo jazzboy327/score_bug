@@ -6,9 +6,9 @@ const jwtPayloadService = new SupabaseJwtproviderService();
 
 export class SupabaseGameinfoService implements GameInfoService {
     async getUserId(): Promise<string> {
-        const jwtPayload = await jwtPayloadService.getJwtPayload()
-        console.log("jwtPayload.sub", jwtPayload.sub)
-        return jwtPayload.sub
+        const user = await jwtPayloadService.getUser();
+        if (!user) throw new Error('User not found');
+        return user.id;
     }
 
     subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void {
