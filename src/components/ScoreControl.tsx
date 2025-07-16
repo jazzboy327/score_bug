@@ -178,7 +178,7 @@ export default function ScoreControl() {
           <div className="flex flex-row items-start justify-center mb-1 mt-3">
             {/* 이닝 */}
             <div className="flex flex-col items-center justify-center mr-10">
-              <div className="text-white text-2xl font-semibold mb-3">스코어</div>
+              <div className="text-white text-xl font-semibold mb-3">스코어</div>
               <div className="flex flex-row">
                 <div className="text-white text-3xl font-semibold mb-2">{a_score} : {h_score}</div>
               </div>
@@ -189,7 +189,7 @@ export default function ScoreControl() {
             </div>
             {/* 볼카운트 */}
             <div className="flex flex-col items-start justify-center mr-6">
-              <div className="text-white text-2xl font-semibold ml-1 mb-3">볼카운트</div>
+              <div className="text-white text-xl font-semibold ml-1 mb-3">볼카운트</div>
               {/* B */}
               <div className="flex flex-row items-center ml-1 mb-2">
                 <div className="w-6 h-6 rounded-full border-2 border-[#00c853] text-[#00c853] flex items-center justify-center text-lg font-semibold mr-2">B</div>
@@ -218,7 +218,7 @@ export default function ScoreControl() {
             </div>
             {/* 베이스 */}
             <div className="flex flex-col items-center">
-              <div className="text-white text-2xl font-semibold">출루</div>
+              <div className="text-white text-xl font-semibold">출루</div>
               <div className="relative w-32 h-32 mt-3">
                 {/* 2루 */}
                 <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-7 h-7 ${isSecond  ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
@@ -230,7 +230,7 @@ export default function ScoreControl() {
             </div>
           </div>
           {/* 구분선 */}
-          <div className="w-full border-4 border-gray-600 my-4"></div>
+          <div className="w-full border-3 border-gray-600 my-2"></div>
 
           {/* 컨트롤 패널: 이닝수정, 점수수정, 베이스수정 */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-6 px-4">
@@ -240,13 +240,13 @@ export default function ScoreControl() {
                   <div className="flex flex-row justify-center w-full">
                       <button 
                           onClick={() => handleInningChange(true)}
-                          className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                       >
                           +
                       </button>
                       <button 
                           onClick={() => handleInningChange(false)}
-                          className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                       >
                           -
                       </button>
@@ -261,13 +261,13 @@ export default function ScoreControl() {
                       <div className="flex flex-row  items-center justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('a_score', true)}
-                              className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                           >
                               +
                           </button>
                           <button 
                               onClick={() => handleScoreChange('a_score', false)}
-                              className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                           >
                               -
                           </button>
@@ -281,13 +281,13 @@ export default function ScoreControl() {
                       <div className="flex flex-row justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('h_score', true)}
-                              className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                           >
                               +
                           </button>
                           <button 
                               onClick={() => handleScoreChange('h_score', false)}
-                              className="w-[35%] h-14 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
                           >
                               -
                           </button>
@@ -301,15 +301,15 @@ export default function ScoreControl() {
                     <div className="flex flex-row justify-center gap-4 px-4 w-full">
                         <button 
                             onClick={() => handleBaseToggle('first')}
-                            className={`w-[30%] md:w-[150px] h-14 rounded-lg text-white text-base md:text-lg font-medium ${isFirst ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isFirst ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
                         >1루</button>
                         <button 
                             onClick={() => handleBaseToggle('second')}
-                            className={`w-[30%] md:w-[150px] h-14 rounded-lg text-white text-base md:text-lg font-medium ${isSecond ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isSecond ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
                         >2루</button>
                         <button 
                             onClick={() => handleBaseToggle('third')}
-                            className={`w-[30%] md:w-[150px] h-14 rounded-lg text-white text-base md:text-lg font-medium ${isThird ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isThird ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
                         >3루</button>
                 </div>
             </div>
@@ -317,19 +317,19 @@ export default function ScoreControl() {
           <div className="flex flex-row items-center justify-center gap-4 px-4">
               <button 
                   onClick={() => handleCountChange('ball')}
-                  className="w-[30%] md:w-[200px] h-14 bg-[#00c853] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#00c853] text-white text-xl md:text-2xl font-semibold rounded-lg"
               >
                   볼
               </button>
               <button 
                   onClick={() => handleCountChange('strike')}
-                  className="w-[30%] md:w-[200px] h-14 bg-[#ffd600] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#ffd600] text-white text-xl md:text-2xl font-semibold rounded-lg"
               >
                   스트라이크
               </button>
               <button 
                   onClick={() => handleCountChange('out')}
-                  className="w-[30%] md:w-[200px] h-14 bg-[#ff1744] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#ff1744] text-white text-xl md:text-2xl font-semibold rounded-lg"
               >
                   아웃
               </button>

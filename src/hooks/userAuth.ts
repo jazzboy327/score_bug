@@ -5,7 +5,7 @@ import { SupabaseJwtproviderService } from '../services/SupabaeJwtproviderServi
 
 const jwtPayloadService = new SupabaseJwtproviderService();
 
-export const useAuth = () => {
+export const userAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { Appconfig } from "../config"
-import { useAuth } from '../hooks/useAuth'
+import { userAuth } from '../hooks/userAuth'
 import { GameCard } from './GameCard' 
 
 // services
@@ -11,7 +11,7 @@ const gameInfoService = new SupabaseGameinfoService()
 // default export
 export default function AdminPanel() {
     const navigate = useNavigate()
-    useAuth() // 인증 처리는 훅에서 자동으로 처리됨
+    userAuth() // 인증 처리는 훅에서 자동으로 처리됨
     
     const [games, setGames] = useState<GameInfoWithScore[]>([])
     const [isLoading, setIsLoading] = useState(true)
