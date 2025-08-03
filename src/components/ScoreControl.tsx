@@ -222,27 +222,27 @@ export default function ScoreControl() {
         <div className="bg-[#222] w-screen h-screen flex flex-col items-top  ">
           {/* 게임 제목 */}
           <div className="text-center py-2">
-            <div className="text-white text-xl font-bold">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
+            <div className="text-white text-xl font-bold tracking-wide">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
           </div>
           {/* 현황판 */}
           <div className="flex flex-row items-start justify-center mb-1 mt-3">
             {/* 이닝 */}
             <div className="flex flex-col items-center justify-center mr-10">
-              <div className="text-white text-xl font-semibold mb-3">스코어</div>
+              <div className="text-white text-xl font-bold mb-3 tracking-wide">스코어</div>
               <div className="flex flex-row">
-                <div className="text-white text-3xl font-semibold mb-2">{a_score} : {h_score}</div>
+                <div className="text-white text-3xl font-bold mb-2 tracking-wide">{a_score} : {h_score}</div>
               </div>
               <div className="flex flex-row">
-                <div className="text-white text-2xl font-semibold mb-2">{inning}{isTop ? ' ▲' : ' ▼'}</div>
+                <div className="text-white text-2xl font-bold mb-2 tracking-wide">{inning}{isTop ? ' ▲' : ' ▼'}</div>
 
               </div>
             </div>
             {/* 볼카운트 */}
             <div className="flex flex-col items-start justify-center mr-6">
-              <div className="text-white text-xl font-semibold ml-1 mb-3">볼카운트</div>
+              <div className="text-white text-xl font-bold ml-1 mb-3 tracking-wide">볼카운트</div>
               {/* B */}
               <div className="flex flex-row items-center ml-1 mb-2">
-                <div className="w-6 h-6 rounded-full border-2 border-[#00c853] text-[#00c853] flex items-center justify-center text-lg font-semibold mr-2">B</div>
+                <div className="w-6 h-6 rounded-full border-2 border-[#00c853] text-[#00c853] flex items-center justify-center text-lg font-bold mr-2">B</div>
                 <div className="flex flex-row">
                   <div className={`w-4 h-4 rounded-full ${bCount > 0 ? 'bg-[#00c853]' : 'bg-[#888]'} mr-2`} />
                   <div className={`w-4 h-4 rounded-full ${bCount > 1 ? 'bg-[#00c853]' : 'bg-[#888]'} mr-2`} />
@@ -251,7 +251,7 @@ export default function ScoreControl() {
               </div>
               {/* S */}
               <div className="flex flex-row items-center ml-1 mb-2">
-                <div className="w-6 h-6 rounded-full border-2 border-[#ffd600] text-[#ffd600] flex items-center justify-center text-lg font-semibold mr-2">S</div>
+                <div className="w-6 h-6 rounded-full border-2 border-[#ffd600] text-[#ffd600] flex items-center justify-center text-lg font-bold mr-2">S</div>
                 <div className="flex flex-row">
                   <div className={`w-4 h-4 rounded-full ${sCount > 0 ? 'bg-[#ffd600]' : 'bg-[#888]'} mr-2`} />
                   <div className={`w-4 h-4 rounded-full ${sCount > 1 ? 'bg-[#ffd600]' : 'bg-[#888]'}`} />
@@ -259,7 +259,7 @@ export default function ScoreControl() {
               </div>
               {/* O */}
               <div className="flex flex-row items-center ml-1">
-                <div className="w-6 h-6 rounded-full border-2 border-[#ff1744] text-[#ff1744] flex items-center justify-center text-lg font-semibold mr-2">O</div>
+                <div className="w-6 h-6 rounded-full border-2 border-[#ff1744] text-[#ff1744] flex items-center justify-center text-lg font-bold mr-2">O</div>
                 <div className="flex flex-row">
                   <div className={`w-4 h-4 rounded-full ${oCount > 0 ? 'bg-[#ff1744]' : 'bg-[#888]'} mr-2`} />
                   <div className={`w-4 h-4 rounded-full ${oCount > 1 ? 'bg-[#ff1744]' : 'bg-[#888]'}`} />
@@ -268,7 +268,7 @@ export default function ScoreControl() {
             </div>
             {/* 베이스 */}
             <div className="flex flex-col items-center">
-              <div className="text-white text-xl font-semibold">베이스</div>
+              <div className="text-white text-xl font-bold tracking-wide">베이스</div>
               <div className="relative w-24 h-20 mt-3">
                 {/* 2루 */}
                 <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 ${isSecond  ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
@@ -286,22 +286,22 @@ export default function ScoreControl() {
           <div className="flex flex-row items-start justify-center gap-8 mb-6 px-4">
               {/* 왼쪽 컬럼: 이닝/초말 */}
               <div className="flex flex-col items-center justify-center w-1/2">
-                  <div className="text-white text-lg font-semibold mb-2">이닝</div>
+                  <div className="text-white text-lg font-bold mb-2 tracking-wide">이닝</div>
                   <div className="flex flex-row justify-center w-full mb-4">
                       <button 
                           onClick={() => handleInningChange(true)}
-                          className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                       >
                           +
                       </button>
                       <button 
                           onClick={() => handleInningChange(false)}
-                          className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                          className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                       >
                           -
                       </button>
                   </div>
-                  <div className="text-white text-lg font-semibold mb-2">초/말</div>
+                  <div className="text-white text-lg font-bold mb-2 tracking-wide">초/말</div>
                   <div className="flex flex-row justify-center w-full">
                       <label className="flex items-center mx-2">
                           <input
@@ -336,17 +336,17 @@ export default function ScoreControl() {
               <div className="flex flex-col items-center justify-center w-1/2">
                   {/* A팀 점수 */}
                   <div className="flex flex-col items-center justify-center w-full mb-4">
-                      <div className="text-white text-lg font-medium mb-2">초공(A) 점수</div>
+                      <div className="text-white text-lg font-bold mb-2 tracking-wide">초공(A) 점수</div>
                       <div className="flex flex-row items-center justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('a_score', true)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                           >
                               +
                           </button>
                           <button 
                               onClick={() => handleScoreChange('a_score', false)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                           >
                               -
                           </button>
@@ -354,17 +354,17 @@ export default function ScoreControl() {
                   </div>
                   {/* B팀 점수 */}
                   <div className="flex flex-col items-center justify-center w-full">
-                      <div className="text-white text-lg font-medium mb-2">말공(B) 점수</div>
+                      <div className="text-white text-lg font-bold mb-2 tracking-wide">말공(B) 점수</div>
                       <div className="flex flex-row justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('h_score', true)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                           >
                               +
                           </button>
                           <button 
                               onClick={() => handleScoreChange('h_score', false)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
+                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
                           >
                               -
                           </button>
