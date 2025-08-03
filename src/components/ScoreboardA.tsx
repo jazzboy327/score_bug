@@ -127,16 +127,16 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
         </div>
 
   {/* 오른쪽 30%: 주루 상황 + 이닝 */}
-  <div className="w-[30%] flex flex-col items-center justify-center gap-6 bg-gray-200">
+  <div className="w-[30%] flex flex-col items-center justify-center gap-6 bg-gray-300">
 
     {/* 주루 마름모 */}
     <div className="relative w-32 h-32 ">
       {/* 2루 */}
-      <div className={`absolute top-5 left-1/2 -translate-x-1/2 w-12 h-12 rotate-45 rounded ${is_second ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className={`absolute top-5 left-1/2 -translate-x-1/2 w-12 h-12 rotate-45  ${is_second ? 'bg-yellow-500' : 'bg-white'}`} />
       {/* 1루 */}
-      <div className={`absolute bottom-1/3 right-0 translate-y-1/2 w-12 h-12 rotate-45 rounded ${is_first ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className={`absolute bottom-1/3 left-2/3 translate-y-2/3 w-12 h-12 rotate-45  ${is_first ? 'bg-yellow-500' : 'bg-white'}`} />
       {/* 3루 */}
-      <div className={`absolute bottom-1/3 left-0 translate-y-1/2 w-12 h-12  rotate-45 rounded ${is_third ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className={`absolute bottom-1/3 right-2/3 translate-y-2/3 w-12 h-12  rotate-45  ${is_third ? 'bg-yellow-500' : 'bg-white'}`} />
      </div>
 
     {/* 이닝 정보 */}

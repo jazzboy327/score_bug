@@ -131,11 +131,11 @@ export default function ScoreboardB() {
         {/* 주루 마름모 */}
         <div className="relative w-[70px] h-full flex items-center justify-center">
           {/* 2루 */}
-          <div className={`absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 rounded ${is_second ? 'bg-yellow-500' : 'bg-white'}`} />
+          <div className={`absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45  ${is_second ? 'bg-yellow-500' : 'bg-white'}`} />
           {/* 1루 */}
-          <div className={`absolute bottom-[45%] right-3 translate-y-1/2 w-4 h-4 rotate-45 rounded ${is_first ? 'bg-yellow-500' : 'bg-white'}`} />
+          <div className={`absolute bottom-[45%] right-3 translate-y-1/2 w-4 h-4 rotate-45  ${is_first ? 'bg-yellow-500' : 'bg-white'}`} />
           {/* 3루 */}
-          <div className={`absolute bottom-[45%] left-3 translate-y-1/2 w-4 h-4 rotate-45 rounded ${is_third ? 'bg-yellow-500' : 'bg-white'}`} />
+          <div className={`absolute bottom-[45%] left-3 translate-y-1/2 w-4 h-4 rotate-45  ${is_third ? 'bg-yellow-500' : 'bg-white'}`} />
         </div>
         {/* B */}
         <div className="flex items-center justify-center gap-1">
