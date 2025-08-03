@@ -115,12 +115,12 @@ export default function ScoreboardB() {
           <div className="relative flex w-[400px] h-full justify-center">
             {/*  어웨이 / 홈 팀 점수 */}
             <div style={{ backgroundColor: aBgColor }} className={`flex w-[50%] font-semibold items-center ${aTextColor}`}>
-              <div className="text-xl font-bold text-center px-2 py-1 w-[70%]">{awayTeam}</div>
+              <div className="text-lg font-bold text-center px-2 py-1 w-[70%]">{awayTeam}</div>
               <div className="text-3xl font-bold text-center w-[30%]">{awayScore}</div>
             </div>
             <div style={{ backgroundColor: hBgColor }} className={`flex w-[50%] font-semibold items-center ${hTextColor}`}>
               <div className="text-3xl font-bold text-center w-[30%]">{homeScore}</div>
-              <div className="text-xl font-bold text-center px-2 py-1 w-[70%]">{homeTeam}</div>
+              <div className="text-lg font-bold text-center px-2 py-1 w-[70%]">{homeTeam}</div>
             </div>
           </div>
 

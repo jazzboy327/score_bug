@@ -117,11 +117,11 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
         {/* 왼쪽 70%: 어웨이 / 홈 팀 점수 */}
         <div className="w-[70%] flex flex-col justify-center ">
           <div style={{ backgroundColor: aBgColor }} className={`flex items-center h-[50%] ${aTextColor}`}>
-            <div className="text-3xl font-bold  text-center px-4 py-2 w-[70%]">{awayTeam}</div>
+            <div className="text-4xl font-bold  text-center px-4 py-2 w-[70%]">{awayTeam}</div>
             <div className="text-6xl font-bold text-center  w-[30%]">{awayScore}</div>
           </div>
           <div style={{ backgroundColor: hBgColor }} className={`flex items-center h-[50%] ${hTextColor}`}>
-            <div className="text-3xl font-bold text-center px-4 py-2 w-[70%]">{homeTeam}</div>
+            <div className="text-4xl font-bold text-center px-4 py-2 w-[70%]">{homeTeam}</div>
             <div className="text-6xl font-bold text-center w-[30%]">{homeScore}</div>
           </div>
         </div>
