@@ -395,19 +395,19 @@ export default function ScoreControl() {
           <div className="flex flex-row items-center justify-center gap-4 px-4 mb-6">
               <button 
                   onClick={() => handleCountChange('ball')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#00c853] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#00c853] text-white text-xl md:text-lg font-semibold rounded-lg"
               >
                   볼
               </button>
               <button 
                   onClick={() => handleCountChange('strike')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#ffd600] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#ffd600] text-white text-xl md:text-lg font-semibold rounded-lg"
               >
                   스트라이크
               </button>
               <button 
                   onClick={() => handleCountChange('out')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#ff1744] text-white text-xl md:text-2xl font-semibold rounded-lg"
+                  className="w-[30%] md:w-[200px] h-12 bg-[#ff1744] text-white text-xl md:text-lg font-semibold rounded-lg"
               >
                   아웃
               </button>
