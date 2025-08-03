@@ -38,8 +38,8 @@ const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, closeMenu }: { game: 
         <div className="absolute top-12 right-0 bg-gray-700 rounded-lg shadow-xl w-48 z-10 border border-gray-600">
             <ul className="text-sm text-gray-200">
                 <li onClick={handleEdit} className="p-3 hover:bg-gray-600 rounded-t-lg cursor-pointer flex items-center">✏️ <span className="ml-2">경기 수정</span></li>
-                <li onClick={handleCopyUrlA} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">A타입 URL 복사</span></li>
-                <li onClick={handleCopyUrlB} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">B타입 URL 복사</span></li>
+                <li onClick={handleCopyUrlA} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">A(700x345)URL 복사</span></li>
+                <li onClick={handleCopyUrlB} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">B(1200x60)URL 복사</span></li>
                 <li onClick={handleDelete} className="p-3 text-red-400 hover:bg-red-900/50 rounded-b-lg cursor-pointer flex items-center">🗑️ <span className="ml-2">삭제</span></li>
             </ul>
         </div>
@@ -106,8 +106,8 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
             
             {/* 카드 헤더 */}
             <div className="flex justify-between items-start mb-4 relative">
-                <div className="flex flex-row pr-8">
-                    <div className="text-xl font-bold text-white mb-1 truncate flex items-center">
+                <div className="flex-1 min-w-0 pr-8">
+                    <div className="text-sm font-bold text-white mb-1 truncate flex items-center">
                         {game.title}
                         {getStatusBadge(game.is_live, game.date_time)}
                     </div>
@@ -203,13 +203,13 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
                         onClick={() => onOverlayView(game.game_id, 'a')}
                         className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-500 transition-all duration-200 text-sm"
                     >
-                        📺 A타입 보기
+                        📺 A타입 보기(700x345)
                     </button>
                     <button
                         onClick={() => onOverlayView(game.game_id, 'b')}
                         className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-500 transition-all duration-200 text-sm"
                     >
-                        📺 B타입 보기
+                        📺 B타입 보기(1200x60)
                     </button>
                 </div>
                 <div className="flex space-x-2">

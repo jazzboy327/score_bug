@@ -4,7 +4,8 @@ import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { Appconfig } from "../config"
 import { userAuth } from '../hooks/userAuth'
-import { GameCard } from './GameCard' 
+import { GameCard } from './GameCard'
+import { getContrastYIQ } from '../utils/colorUtils'
 
 // services
 const gameInfoService = new SupabaseGameinfoService()
@@ -293,16 +294,16 @@ export default function AdminPanel() {
                                         className="text-center flex-1 p-2 rounded"
                                         style={{ backgroundColor: themeColors.away_bg_color }}
                                     >
-                                        <div className="text-white font-semibold">{selectedGame.away_team}</div>
-                                        <div className="text-white text-sm">원정팀</div>
+                                        <div className={`text-lg font-semibold ${getContrastYIQ(themeColors.away_bg_color)}`}>{selectedGame.away_team}</div>
+                                        <div className={`text-xs ${getContrastYIQ(themeColors.away_bg_color)}`}>원정팀</div>
                                     </div>
                                     <div className="text-white font-bold mx-2">VS</div>
                                     <div 
                                         className="text-center flex-1 p-2 rounded"
                                         style={{ backgroundColor: themeColors.home_bg_color }}
                                     >
-                                        <div className="text-white font-semibold">{selectedGame.home_team}</div>
-                                        <div className="text-white text-sm">홈팀</div>
+                                        <div className={`text-lg font-semibold ${getContrastYIQ(themeColors.home_bg_color)}`}>{selectedGame.home_team}</div>
+                                        <div className={`text-xs ${getContrastYIQ(themeColors.home_bg_color)}`}>홈팀</div>
                                     </div>
                                 </div>
                             </div>

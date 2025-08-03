@@ -78,6 +78,19 @@ export default function ScoreControl() {
         }
     };
 
+    // 초말 토글
+    const handleTopBottomToggle = async () => {
+        if (!score) return;
+        const updatedScore = { ...score };
+        updatedScore.is_top = !score.is_top;
+        try {
+            await scoreService.updateLiveScore(updatedScore);
+            setScore(updatedScore);
+        } catch (error) {
+            console.error('Failed to update top/bottom:', error);
+        }
+    };
+
     // 베이스 토글
     const handleBaseToggle = async (base: 'first' | 'second' | 'third') => {
         if (!score) return;
@@ -123,6 +136,38 @@ export default function ScoreControl() {
             setScore(updatedScore);
         } catch (error) {
             console.error('Failed to update count:', error);
+        }
+    };
+
+    // 볼카운트 초기화
+    const handleCountReset = async () => {
+        if (!score) return;
+        const updatedScore = { ...score };
+        updatedScore.b_count = 0;
+        updatedScore.s_count = 0;
+        updatedScore.o_count = 0;
+        
+        try {
+            await scoreService.updateLiveScore(updatedScore);
+            setScore(updatedScore);
+        } catch (error) {
+            console.error('Failed to reset count:', error);
+        }
+    };
+
+    // 출루 초기화
+    const handleBaseReset = async () => {
+        if (!score) return;
+        const updatedScore = { ...score };
+        updatedScore.is_first = false;
+        updatedScore.is_second = false;
+        updatedScore.is_third = false;
+        
+        try {
+            await scoreService.updateLiveScore(updatedScore);
+            setScore(updatedScore);
+        } catch (error) {
+            console.error('Failed to reset bases:', error);
         }
     };
 
@@ -183,7 +228,7 @@ export default function ScoreControl() {
                 <div className="text-white text-3xl font-semibold mb-2">{a_score} : {h_score}</div>
               </div>
               <div className="flex flex-row">
-                <div className="text-white text-3xl font-semibold mb-2">{inning}{isTop ? ' ▲' : ' ▼'}</div>
+                <div className="text-white text-2xl font-semibold mb-2">{inning}{isTop ? ' ▲' : ' ▼'}</div>
 
               </div>
             </div>
@@ -218,26 +263,26 @@ export default function ScoreControl() {
             </div>
             {/* 베이스 */}
             <div className="flex flex-col items-center">
-              <div className="text-white text-xl font-semibold">출루</div>
-              <div className="relative w-32 h-32 mt-3">
+              <div className="text-white text-xl font-semibold">베이스</div>
+              <div className="relative w-24 h-20 mt-3">
                 {/* 2루 */}
-                <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-7 h-7 ${isSecond  ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 ${isSecond  ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
                 {/* 1루 */}
-                <div className={`absolute bottom-1/2 right-5 w-7 h-7 ${isFirst ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute bottom-1/3 right-3 w-6 h-6 ${isFirst ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
                 {/* 3루 */}
-                <div className={`absolute bottom-1/2 left-5 w-7 h-7 ${isThird ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute bottom-1/3 left-3 w-6 h-6 ${isThird ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
               </div>
             </div>
           </div>
           {/* 구분선 */}
           <div className="w-full border-3 border-gray-600 my-2"></div>
 
-          {/* 컨트롤 패널: 이닝수정, 점수수정, 베이스수정 */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-6 px-4">
-              {/* 이닝 */}
-              <div className="flex flex-col items-center justify-center w-full">
+          {/* 컨트롤 패널: 2컬럼 레이아웃 */}
+          <div className="flex flex-row items-start justify-center gap-8 mb-6 px-4">
+              {/* 왼쪽 컬럼: 이닝/초말 */}
+              <div className="flex flex-col items-center justify-center w-1/2">
                   <div className="text-white text-lg font-semibold mb-2">이닝</div>
-                  <div className="flex flex-row justify-center w-full">
+                  <div className="flex flex-row justify-center w-full mb-4">
                       <button 
                           onClick={() => handleInningChange(true)}
                           className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
@@ -251,14 +296,43 @@ export default function ScoreControl() {
                           -
                       </button>
                   </div>
+                  <div className="text-white text-lg font-semibold mb-2">초/말</div>
+                  <div className="flex flex-row justify-center w-full">
+                      <label className="flex items-center mx-2">
+                          <input
+                              type="radio"
+                              name="topBottom"
+                              checked={isTop}
+                              onChange={() => handleTopBottomToggle()}
+                              className="sr-only"
+                          />
+                          <div className={`w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center ${isTop ? 'bg-[#ffd600] border-[#ffd600]' : 'bg-transparent'}`}>
+                              {isTop && <div className="w-3 h-3 bg-black rounded-full"></div>}
+                          </div>
+                          <span className="ml-2 text-white text-lg">초</span>
+                      </label>
+                      <label className="flex items-center mx-2">
+                          <input
+                              type="radio"
+                              name="topBottom"
+                              checked={!isTop}
+                              onChange={() => handleTopBottomToggle()}
+                              className="sr-only"
+                          />
+                          <div className={`w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center ${!isTop ? 'bg-[#ffd600] border-[#ffd600]' : 'bg-transparent'}`}>
+                              {!isTop && <div className="w-3 h-3 bg-black rounded-full"></div>}
+                          </div>
+                          <span className="ml-2 text-white text-lg">말</span>
+                      </label>
+                  </div>
               </div>
 
-              {/* 점수 컨트롤 */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full">
+              {/* 오른쪽 컬럼: 점수 컨트롤 */}
+              <div className="flex flex-col items-center justify-center w-1/2">
                   {/* A팀 점수 */}
-                  <div className="flex flex-col items-center justify-center w-full">
-                      <div className="text-white text-lg font-medium mb-2">A팀(선공) 점수</div>
-                      <div className="flex flex-row  items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center w-full mb-4">
+                      <div className="text-white text-lg font-medium mb-2">초공(A) 점수</div>
+                      <div className="flex flex-row items-center justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('a_score', true)}
                               className="w-[35%] h-12 bg-[#444] text-white text-2xl rounded-lg mx-2"
@@ -273,11 +347,9 @@ export default function ScoreControl() {
                           </button>
                       </div>
                   </div>
-                </div>
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full">
                   {/* B팀 점수 */}
                   <div className="flex flex-col items-center justify-center w-full">
-                      <div className="text-white text-lg font-medium mb-2">B팀(후공) 점수</div>
+                      <div className="text-white text-lg font-medium mb-2">말공(B) 점수</div>
                       <div className="flex flex-row justify-center w-full">
                           <button 
                               onClick={() => handleScoreChange('h_score', true)}
@@ -295,6 +367,7 @@ export default function ScoreControl() {
                   </div>
               </div>
           </div>
+
             {/* 출루 베이스 수정 */}
             <div className="flex flex-col items-center justify-center w-full mb-4">
                 <div className="text-white text-lg font-medium mr-4">출루</div>
@@ -314,7 +387,7 @@ export default function ScoreControl() {
                 </div>
             </div>
           {/* 버튼 3개 */}
-          <div className="flex flex-row items-center justify-center gap-4 px-4">
+          <div className="flex flex-row items-center justify-center gap-4 px-4 mb-6">
               <button 
                   onClick={() => handleCountChange('ball')}
                   className="w-[30%] md:w-[200px] h-12 bg-[#00c853] text-white text-xl md:text-2xl font-semibold rounded-lg"
@@ -332,6 +405,22 @@ export default function ScoreControl() {
                   className="w-[30%] md:w-[200px] h-12 bg-[#ff1744] text-white text-xl md:text-2xl font-semibold rounded-lg"
               >
                   아웃
+              </button>
+          </div>
+
+          {/* 초기화 버튼들 */}
+          <div className="flex flex-row items-center justify-center gap-4 px-4">
+              <button 
+                  onClick={() => handleCountReset()}
+                  className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
+              >
+                  볼카운트 초기화
+              </button>
+              <button 
+                  onClick={() => handleBaseReset()}
+                  className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
+              >
+                  베이스 초기화
               </button>
           </div>
         </div>

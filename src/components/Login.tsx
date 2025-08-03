@@ -148,7 +148,7 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
+        <div className="h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     {/* 야구공 이미지 */}
@@ -377,12 +377,6 @@ export default function Login() {
                 </div>
             )}
 
-            {/* 카피라이트 */}
-            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
-                <div className="text-white text-xs text-center opacity-70 px-4">
-                    © 2025 Sco-B System. All rights reserved.
-                </div>
-            </div>
         </div>
     )
 } 
