@@ -108,7 +108,7 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
     {/* SCOREBOARD 콘텐츠 */}
     <div className="relative w-full h-full overflow-hidden bg-white flex flex-col">
       {/* 1. 상단: 타이틀 */}
-      <div className="h-[19%] text-2xl font-semibold text-black flex items-center justify-center">
+      <div className="h-[19%] text-3xl font-bold text-black flex items-center justify-center">
         {gameTitle}
       </div>
       {/* 2. 중앙: 팀 + 주루 + 이닝 */}

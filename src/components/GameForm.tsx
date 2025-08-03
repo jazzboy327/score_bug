@@ -75,7 +75,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
         h_team: '',
         game_date: '',
         game_time: '',
-        field: ''
+        field: '경기장'
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
