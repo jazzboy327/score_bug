@@ -222,7 +222,7 @@ export default function ScoreControl() {
         <div className="bg-[#222] w-screen h-screen flex flex-col items-top  ">
           {/* 게임 제목 */}
           <div className="text-center py-2">
-            <div className="text-white text-xl font-bold tracking-wide">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
+            <div className="text-white text-xl font-bold tracking-wide font-display">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
           </div>
           {/* 현황판 */}
           <div className="flex flex-row items-start justify-center mb-1 mt-3">
