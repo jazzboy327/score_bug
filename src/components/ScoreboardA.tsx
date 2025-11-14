@@ -9,14 +9,14 @@ const gameInfoService: SupabaseGameinfoService = new SupabaseGameinfoService();
 const scoreService: SupabaseScoreService = new SupabaseScoreService();
 
 function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolean; color?: 'green' | 'yellow' | 'red'; size?: string }) {
-  const colorClass = active
+  const bgColor = active
     ? color === 'red'
-      ? 'bg-red-500'
+      ? '#ef4444'
       : color === 'yellow'
-      ? 'bg-yellow-500'
-      : 'bg-green-400'
-    : 'bg-gray-300'
-  return <span className={`inline-block rounded-full mx-1 ${size} ${colorClass}`} />
+      ? '#eab308'
+      : '#4ade80'
+    : '#d1d5db'
+  return <span className={`inline-block rounded-full mx-1 ${size}`} style={{ backgroundColor: bgColor }} />
 }
 
 export default function ScoreboardA() {
@@ -106,9 +106,9 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
     }}
   >
     {/* SCOREBOARD 콘텐츠 */}
-    <div className="relative w-full h-full overflow-hidden bg-gray-100 flex flex-col">
+    <div className="relative w-full h-full overflow-hidden flex flex-col" style={{ backgroundColor: '#f3f4f6' }}>
       {/* 1. 상단: 타이틀 */}
-      <div className="h-[19%] text-3xl font-bold text-black flex items-center justify-center">
+      <div className="h-[19%] text-3xl font-bold flex items-center justify-center" style={{ backgroundColor: '#e5e7eb', color: '#000000' }}>
         {gameTitle}
       </div>
       {/* 2. 중앙: 팀 + 주루 + 이닝 */}
@@ -127,25 +127,25 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
         </div>
 
   {/* 오른쪽 30%: 주루 상황 + 이닝 */}
-  <div className="w-[30%] flex flex-col items-center justify-center gap-6 bg-gray-300">
+  <div className="w-[30%] flex flex-col items-center justify-center gap-6" style={{ backgroundColor: '#d1d5db' }}>
 
     {/* 주루 마름모 */}
     <div className="relative w-32 h-32 ">
       {/* 2루 */}
-      <div className={`absolute top-5 left-1/2 -translate-x-1/2 w-12 h-12 rotate-45  ${is_second ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className="absolute top-5 left-1/2 -translate-x-1/2 w-12 h-12 rotate-45" style={{ backgroundColor: is_second ? '#eab308' : '#ffffff' }} />
       {/* 1루 */}
-      <div className={`absolute bottom-1/3 left-2/3 translate-y-2/3 w-12 h-12 rotate-45  ${is_first ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className="absolute bottom-1/3 left-2/3 translate-y-2/3 w-12 h-12 rotate-45" style={{ backgroundColor: is_first ? '#eab308' : '#ffffff' }} />
       {/* 3루 */}
-      <div className={`absolute bottom-1/3 right-2/3 translate-y-2/3 w-12 h-12  rotate-45  ${is_third ? 'bg-yellow-500' : 'bg-white'}`} />
+      <div className="absolute bottom-1/3 right-2/3 translate-y-2/3 w-12 h-12  rotate-45" style={{ backgroundColor: is_third ? '#eab308' : '#ffffff' }} />
      </div>
 
     {/* 이닝 정보 */}
-    <div className="text-4xl font-semibold text-orange-500">{inning} {isTop ? '▲' : '▼'}</div>
+    <div className="text-4xl font-semibold" style={{ color: '#f97316' }}>{inning} {isTop ? '▲' : '▼'}</div>
   </div>
 </div>
 
 {/* 3. 하단: BSO */}
-<div className="flex justify-center items-center gap-12 px-4 py-0 text-xl font-bold text-black h-[18%] divide-x divide-[#d9d9d9]">
+<div className="flex justify-center items-center gap-12 px-4 py-0 text-xl font-bold h-[18%] divide-x divide-[#d9d9d9]" style={{ backgroundColor: '#f3f4f6', color: '#000000' }}>
 
   {/* B */}
   <div className="flex items-center justify-center gap-2 w-[37%]  ">
