@@ -271,11 +271,11 @@ export default function ScoreControl() {
               <div className="text-white text-xl font-bold tracking-wide">베이스</div>
               <div className="relative w-24 h-20 mt-3">
                 {/* 2루 */}
-                <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 ${isSecond  ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 ${isSecond  ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
                 {/* 1루 */}
-                <div className={`absolute bottom-1/3 right-3 w-6 h-6 ${isFirst ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute bottom-1/3 right-3 w-6 h-6 ${isFirst ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
                 {/* 3루 */}
-                <div className={`absolute bottom-1/3 left-3 w-6 h-6 ${isThird ? 'bg-[#ffd600]' : 'bg-[#888]'} -rotate-45`} />
+                <div className={`absolute bottom-1/3 left-3 w-6 h-6 ${isThird ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
               </div>
             </div>
           </div>
@@ -379,15 +379,15 @@ export default function ScoreControl() {
                     <div className="flex flex-row justify-center gap-4 px-4 w-full">
                         <button 
                             onClick={() => handleBaseToggle('first')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isFirst ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isFirst ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
                         >1루</button>
                         <button 
                             onClick={() => handleBaseToggle('second')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isSecond ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isSecond ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
                         >2루</button>
                         <button 
                             onClick={() => handleBaseToggle('third')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isThird ? 'bg-[#ffd600] text-black' : 'bg-[#444]'}`}
+                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isThird ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
                         >3루</button>
                 </div>
             </div>
