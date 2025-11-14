@@ -22,7 +22,10 @@ function Circle({ active, color = 'green', size = 16 }: { active?: boolean; colo
     height: `${size}px`, 
     borderRadius: '50%', 
     backgroundColor: bgColor,
-    margin: '0 4px'
+    margin: '0px 2px',
+    padding: 0,
+    boxSizing: 'border-box',
+    flexShrink: 0
   }} />
 }
 
@@ -104,7 +107,7 @@ export default function ScoreboardB() {
 
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'transparent' }}>
+    <div style={{ position: 'fixed', top: '0px', left: '0px', right: '0px', bottom: '0px', backgroundColor: 'transparent', margin: 0, padding: 0 }}>
       <div
         ref={containerRef}
         style={{
@@ -112,11 +115,13 @@ export default function ScoreboardB() {
           height: '60px',
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
-          opacity: 1
+          opacity: 1,
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          boxSizing: 'border-box'
         }}
       >
         {/* SCOREBOARD 콘텐츠 */}
-        <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', backgroundColor: '#ffffff' }}>
+        <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', backgroundColor: '#ffffff', boxSizing: 'border-box' }}>
           {/* 1. 좌측: 타이틀 */}
           <div style={{ 
             width: '400px', 
@@ -127,7 +132,12 @@ export default function ScoreboardB() {
             alignItems: 'center', 
             justifyContent: 'center', 
             backgroundColor: '#e5e7eb', 
-            color: '#000000' 
+            color: '#000000',
+            boxSizing: 'border-box',
+            margin: 0,
+            padding: '0px 8px',
+            lineHeight: '1.2',
+            textAlign: 'center'
           }}>
             {gameTitle}
           </div>
@@ -140,10 +150,12 @@ export default function ScoreboardB() {
               width: '50%', 
               fontWeight: '600', 
               alignItems: 'center',
-              color: aTextColor === 'text-white' ? '#ffffff' : '#000000'
+              color: aTextColor === 'text-white' ? '#ffffff' : '#000000',
+              boxSizing: 'border-box',
+              margin: 0
             }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%' }}>{awayTeam}</div>
-              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%' }}>{awayScore}</div>
+              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{awayTeam}</div>
+              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{awayScore}</div>
             </div>
             <div style={{ 
               backgroundColor: hBgColor, 
@@ -151,10 +163,12 @@ export default function ScoreboardB() {
               width: '50%', 
               fontWeight: '600', 
               alignItems: 'center',
-              color: hTextColor === 'text-white' ? '#ffffff' : '#000000'
+              color: hTextColor === 'text-white' ? '#ffffff' : '#000000',
+              boxSizing: 'border-box',
+              margin: 0
             }}>
-              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%' }}>{homeScore}</div>
-              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%' }}>{homeTeam}</div>
+              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{homeScore}</div>
+              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{homeTeam}</div>
             </div>
           </div>
 
@@ -164,18 +178,20 @@ export default function ScoreboardB() {
           width: '400px', 
           alignItems: 'center', 
           gap: '12px', 
-          padding: '0 8px', 
+          padding: '0px 8px', 
           fontSize: '16px', 
           fontWeight: '700', 
           backgroundColor: '#1a1a1a', 
-          color: '#ffffff' 
+          color: '#ffffff',
+          boxSizing: 'border-box',
+          margin: 0
         }}>
         {/* 이닝 정보 */}
-        <div style={{ display: 'flex', width: '40px', fontSize: '24px', justifyContent: 'center', color: '#f97316' }}>
+        <div style={{ display: 'flex', width: '40px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box' }}>
           {inning} {isTop ? '▲' : '▼'}
         </div>
         {/* 주루 마름모 */}
-        <div style={{ position: 'relative', width: '70px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '70px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
           {/* 2루 */}
           <div style={{ 
             position: 'absolute', 
@@ -184,7 +200,10 @@ export default function ScoreboardB() {
             width: '16px', 
             height: '16px', 
             transform: 'translateX(-50%) rotate(45deg)',
-            backgroundColor: is_second ? '#eab308' : '#9ca3af' 
+            backgroundColor: is_second ? '#eab308' : '#9ca3af',
+            boxSizing: 'border-box',
+            margin: 0,
+            padding: 0
           }} />
           {/* 1루 */}
           <div style={{ 
@@ -194,7 +213,10 @@ export default function ScoreboardB() {
             width: '16px', 
             height: '16px', 
             transform: 'translateY(50%) rotate(45deg)',
-            backgroundColor: is_first ? '#eab308' : '#9ca3af' 
+            backgroundColor: is_first ? '#eab308' : '#9ca3af',
+            boxSizing: 'border-box',
+            margin: 0,
+            padding: 0
           }} />
           {/* 3루 */}
           <div style={{ 
@@ -204,31 +226,34 @@ export default function ScoreboardB() {
             width: '16px', 
             height: '16px', 
             transform: 'translateY(50%) rotate(45deg)',
-            backgroundColor: is_third ? '#eab308' : '#9ca3af' 
+            backgroundColor: is_third ? '#eab308' : '#9ca3af',
+            boxSizing: 'border-box',
+            margin: 0,
+            padding: 0
           }} />
         </div>
         {/* B */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-          <div style={{ fontSize: '16px' }}>B</div>
-          <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxSizing: 'border-box' }}>
+          <div style={{ fontSize: '16px', lineHeight: '1', fontWeight: '700' }}>B</div>
+          <div style={{ display: 'flex', gap: '2px' }}>
             {[...Array(3)].map((_, i) => (
                     <Circle key={i} active={i < bCount} color="green" size={16} />
               ))}
           </div>
         </div>
         {/* S */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-          <div style={{ fontSize: '16px' }}>S</div>
-          <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxSizing: 'border-box' }}>
+          <div style={{ fontSize: '16px', lineHeight: '1', fontWeight: '700' }}>S</div>
+          <div style={{ display: 'flex', gap: '2px' }}>
             {[...Array(2)].map((_, i) => (
                     <Circle key={i} active={i < sCount} color="yellow" size={16} />
                   ))}
           </div>
         </div>
         {/* O */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-          <div style={{ fontSize: '16px' }}>O</div>
-          <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxSizing: 'border-box' }}>
+          <div style={{ fontSize: '16px', lineHeight: '1', fontWeight: '700' }}>O</div>
+          <div style={{ display: 'flex', gap: '2px' }}>
             {[...Array(2)].map((_, i) => (
                     <Circle key={i} active={i < oCount} color="red" size={16} />
                   ))}
