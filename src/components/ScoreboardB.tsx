@@ -187,7 +187,7 @@ export default function ScoreboardB() {
           margin: 0
         }}>
         {/* 이닝 정보 */}
-        <div style={{ display: 'flex', width: '40px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', width: '60px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box', whiteSpace: 'nowrap', flexShrink: 0 }}>
           {inning} {isTop ? '▲' : '▼'}
         </div>
         {/* 주루 마름모 */}

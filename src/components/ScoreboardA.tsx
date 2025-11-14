@@ -204,7 +204,7 @@ console.log(hBgColor, aBgColor, hTextColor, aTextColor)
      </div>
 
     {/* 이닝 정보 */}
-    <div style={{ fontSize: '36px', fontWeight: '600', color: '#f97316', lineHeight: '1', boxSizing: 'border-box' }}>{inning} {isTop ? '▲' : '▼'}</div>
+    <div style={{ fontSize: '36px', fontWeight: '600', color: '#f97316', lineHeight: '1', boxSizing: 'border-box', whiteSpace: 'nowrap', textAlign: 'center' }}>{inning} {isTop ? '▲' : '▼'}</div>
   </div>
 </div>
 
