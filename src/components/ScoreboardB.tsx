@@ -8,7 +8,7 @@ import { getContrastYIQ } from "../utils/colorUtils"
 const gameInfoService: SupabaseGameinfoService = new SupabaseGameinfoService();
 const scoreService: SupabaseScoreService = new SupabaseScoreService();
 
-function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolean; color?: 'green' | 'yellow' | 'red'; size?: string }) {
+function Circle({ active, color = 'green', size = 16 }: { active?: boolean; color?: 'green' | 'yellow' | 'red'; size?: number }) {
   const bgColor = active
     ? color === 'red'
       ? '#ef4444'
@@ -16,7 +16,14 @@ function Circle({ active, color = 'green', size = 'w-6 h-6' }: { active?: boolea
       ? '#eab308'
       : '#4ade80'
     : '#9ca3af'
-  return <span className={`inline-block rounded-full mx-1 ${size}`} style={{ backgroundColor: bgColor }} />
+  return <span style={{ 
+    display: 'inline-block', 
+    width: `${size}px`, 
+    height: `${size}px`, 
+    borderRadius: '50%', 
+    backgroundColor: bgColor,
+    margin: '0 4px'
+  }} />
 }
 
 export default function ScoreboardB() {
@@ -97,70 +104,133 @@ export default function ScoreboardB() {
 
 
   return (
-    <div className="fixed inset-0 bg-transparent">
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'transparent' }}>
       <div
         ref={containerRef}
-        className="w-[1200px] h-[60px] transition-opacity duration-700 opacity-100 origin-top-left"
         style={{
+          width: '1200px',
+          height: '60px',
           transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          opacity: 1
         }}
       >
         {/* SCOREBOARD 콘텐츠 */}
-        <div className="relative w-full h-full overflow-hidden flex" style={{ backgroundColor: '#ffffff' }}>
+        <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', backgroundColor: '#ffffff' }}>
           {/* 1. 좌측: 타이틀 */}
-          <div className="w-[400px] h-full text-xl font-semibold flex items-center justify-center" style={{ backgroundColor: '#e5e7eb', color: '#000000' }}>
+          <div style={{ 
+            width: '400px', 
+            height: '100%', 
+            fontSize: '20px', 
+            fontWeight: '600', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            backgroundColor: '#e5e7eb', 
+            color: '#000000' 
+          }}>
             {gameTitle}
           </div>
           {/* 2. 중앙: 팀, 점수 */}
-          <div className="relative flex w-[400px] h-full justify-center">
+          <div style={{ position: 'relative', display: 'flex', width: '400px', height: '100%', justifyContent: 'center' }}>
             {/*  어웨이 / 홈 팀 점수 */}
-            <div style={{ backgroundColor: aBgColor }} className={`flex w-[50%] font-semibold items-center ${aTextColor}`}>
-              <div className="text-lg font-bold text-center px-2 py-1 w-[70%]">{awayTeam}</div>
-              <div className="text-3xl font-bold text-center w-[30%]">{awayScore}</div>
+            <div style={{ 
+              backgroundColor: aBgColor, 
+              display: 'flex', 
+              width: '50%', 
+              fontWeight: '600', 
+              alignItems: 'center',
+              color: aTextColor === 'text-white' ? '#ffffff' : '#000000'
+            }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%' }}>{awayTeam}</div>
+              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%' }}>{awayScore}</div>
             </div>
-            <div style={{ backgroundColor: hBgColor }} className={`flex w-[50%] font-semibold items-center ${hTextColor}`}>
-              <div className="text-3xl font-bold text-center w-[30%]">{homeScore}</div>
-              <div className="text-lg font-bold text-center px-2 py-1 w-[70%]">{homeTeam}</div>
+            <div style={{ 
+              backgroundColor: hBgColor, 
+              display: 'flex', 
+              width: '50%', 
+              fontWeight: '600', 
+              alignItems: 'center',
+              color: hTextColor === 'text-white' ? '#ffffff' : '#000000'
+            }}>
+              <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%' }}>{homeScore}</div>
+              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%' }}>{homeTeam}</div>
             </div>
           </div>
 
         {/* 3. 우측: 이닝 주루 BSO */}
-        <div className="flex w-[400px] items-center gap-3 px-2 py-0 text-base font-bold" style={{ backgroundColor: '#1a1a1a', color: '#ffffff' }}>
+        <div style={{ 
+          display: 'flex', 
+          width: '400px', 
+          alignItems: 'center', 
+          gap: '12px', 
+          padding: '0 8px', 
+          fontSize: '16px', 
+          fontWeight: '700', 
+          backgroundColor: '#1a1a1a', 
+          color: '#ffffff' 
+        }}>
         {/* 이닝 정보 */}
-        <div className="flex w-[40px] text-2xl justify-center" style={{ color: '#f97316' }}>{inning} {isTop ? '▲' : '▼'}</div>
+        <div style={{ display: 'flex', width: '40px', fontSize: '24px', justifyContent: 'center', color: '#f97316' }}>
+          {inning} {isTop ? '▲' : '▼'}
+        </div>
         {/* 주루 마름모 */}
-        <div className="relative w-[70px] h-full flex items-center justify-center">
+        <div style={{ position: 'relative', width: '70px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {/* 2루 */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: is_second ? '#eab308' : '#9ca3af' }} />
+          <div style={{ 
+            position: 'absolute', 
+            top: '12px', 
+            left: '50%', 
+            width: '16px', 
+            height: '16px', 
+            transform: 'translateX(-50%) rotate(45deg)',
+            backgroundColor: is_second ? '#eab308' : '#9ca3af' 
+          }} />
           {/* 1루 */}
-          <div className="absolute bottom-[37%] right-3 translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: is_first ? '#eab308' : '#9ca3af' }} />
+          <div style={{ 
+            position: 'absolute', 
+            bottom: '37%', 
+            right: '12px', 
+            width: '16px', 
+            height: '16px', 
+            transform: 'translateY(50%) rotate(45deg)',
+            backgroundColor: is_first ? '#eab308' : '#9ca3af' 
+          }} />
           {/* 3루 */}
-          <div className="absolute bottom-[37%] left-3 translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: is_third ? '#eab308' : '#9ca3af' }} />
+          <div style={{ 
+            position: 'absolute', 
+            bottom: '37%', 
+            left: '12px', 
+            width: '16px', 
+            height: '16px', 
+            transform: 'translateY(50%) rotate(45deg)',
+            backgroundColor: is_third ? '#eab308' : '#9ca3af' 
+          }} />
         </div>
         {/* B */}
-        <div className="flex items-center justify-center gap-1">
-          <div className="text-base">B</div>
-          <div className="flex ">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+          <div style={{ fontSize: '16px' }}>B</div>
+          <div style={{ display: 'flex' }}>
             {[...Array(3)].map((_, i) => (
-                    <Circle key={i} active={i < bCount} color="green" size="w-4 h-4" />
+                    <Circle key={i} active={i < bCount} color="green" size={16} />
               ))}
           </div>
         </div>
         {/* S */}
-        <div className="flex items-center justify-center gap-1">
-          <div className="text-base">S</div>
-          <div className="flex ">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+          <div style={{ fontSize: '16px' }}>S</div>
+          <div style={{ display: 'flex' }}>
             {[...Array(2)].map((_, i) => (
-                    <Circle key={i} active={i < sCount} color="yellow" size="w-4 h-4" />
+                    <Circle key={i} active={i < sCount} color="yellow" size={16} />
                   ))}
           </div>
         </div>
         {/* O */}
-        <div className="flex items-center justify-center gap-1">
-          <div className="text-base">O</div>
-          <div className="flex ">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+          <div style={{ fontSize: '16px' }}>O</div>
+          <div style={{ display: 'flex' }}>
             {[...Array(2)].map((_, i) => (
-                    <Circle key={i} active={i < oCount} color="red" size="w-4 h-4" />
+                    <Circle key={i} active={i < oCount} color="red" size={16} />
                   ))}
           </div>
         </div>
