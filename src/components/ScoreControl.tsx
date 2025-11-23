@@ -146,7 +146,7 @@ export default function ScoreControl() {
         const updatedScore = { ...score };
         updatedScore.b_count = 0;
         updatedScore.s_count = 0;
-        updatedScore.o_count = 0;
+        // updatedScore.o_count = 0;
         
         try {
             await scoreService.updateLiveScore(updatedScore);

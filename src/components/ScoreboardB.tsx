@@ -126,8 +126,8 @@ export default function ScoreboardB() {
           <div style={{ 
             width: '400px', 
             height: '100%', 
-            fontSize: '20px', 
-            fontWeight: '600', 
+            fontSize: '23px', 
+            fontWeight: '700', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
@@ -154,7 +154,7 @@ export default function ScoreboardB() {
               boxSizing: 'border-box',
               margin: 0
             }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{awayTeam}</div>
+              <div style={{ fontSize: '25px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{awayTeam}</div>
               <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{awayScore}</div>
             </div>
             <div style={{ 
@@ -168,7 +168,7 @@ export default function ScoreboardB() {
               margin: 0
             }}>
               <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{homeScore}</div>
-              <div style={{ fontSize: '18px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{homeTeam}</div>
+              <div style={{ fontSize: '25px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{homeTeam}</div>
             </div>
           </div>
 
