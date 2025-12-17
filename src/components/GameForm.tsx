@@ -147,7 +147,9 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     field: formData.field,
                     is_live: true,
                     home_bg_color: '#374151',
-                    away_bg_color: '#f7f7f7'
+                    away_bg_color: '#f7f7f7',
+                    title_font_size: 30,
+                    team_name_font_size: 36
                 })
 
                 if (newGame) {

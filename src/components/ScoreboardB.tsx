@@ -99,6 +99,10 @@ export default function ScoreboardB() {
   const homeTeam = gameInfo?.home_team ?? "HOME TEAM"
   const awayTeam = gameInfo?.away_team ?? "AWAY TEAM"
   const gameTitle = gameInfo?.title ?? "TITLE"
+  const homeLogoUrl = gameInfo?.home_team_logo_url
+  const awayLogoUrl = gameInfo?.away_team_logo_url
+  const titleFontSize = gameInfo?.title_font_size ?? 23
+  const teamNameFontSize = gameInfo?.team_name_font_size ?? 25
 
   const hBgColor = gameInfo?.home_bg_color ?? "#374151"
   const aBgColor = gameInfo?.away_bg_color ?? "#f7f7f7"
@@ -126,7 +130,7 @@ export default function ScoreboardB() {
           <div style={{ 
             width: '400px', 
             height: '100%', 
-            fontSize: '23px', 
+            fontSize: `${titleFontSize}px`, 
             fontWeight: '700', 
             display: 'flex', 
             alignItems: 'center', 
@@ -152,9 +156,48 @@ export default function ScoreboardB() {
               alignItems: 'center',
               color: aTextColor === 'text-white' ? '#ffffff' : '#000000',
               boxSizing: 'border-box',
-              margin: 0
+              margin: 0,
+              position: 'relative'
             }}>
-              <div style={{ fontSize: '25px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{awayTeam}</div>
+              {/* 로고 영역 (왼쪽 고정) */}
+              {awayLogoUrl && (
+                <div style={{ 
+                  position: 'absolute',
+                  left: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '35px',
+                  height: '35px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <img 
+                    src={awayLogoUrl} 
+                    alt={`${awayTeam} 로고`}
+                    style={{ 
+                      maxHeight: '100%',
+                      maxWidth: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              )}
+              {/* 팀명 영역 (중앙) */}
+              <div style={{ 
+                fontSize: `${teamNameFontSize}px`, 
+                fontWeight: '700', 
+                textAlign: 'center', 
+                padding: '4px 8px', 
+                width: '70%', 
+                boxSizing: 'border-box', 
+                lineHeight: '1.2',
+                paddingLeft: '48px'
+              }}>
+                {awayTeam}
+              </div>
+              {/* 점수 영역 (오른쪽) */}
               <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{awayScore}</div>
             </div>
             <div style={{ 
@@ -165,10 +208,49 @@ export default function ScoreboardB() {
               alignItems: 'center',
               color: hTextColor === 'text-white' ? '#ffffff' : '#000000',
               boxSizing: 'border-box',
-              margin: 0
+              margin: 0,
+              position: 'relative'
             }}>
+              {/* 점수 영역 (왼쪽) */}
               <div style={{ fontSize: '30px', fontWeight: '700', textAlign: 'center', width: '30%', boxSizing: 'border-box', lineHeight: '1' }}>{homeScore}</div>
-              <div style={{ fontSize: '25px', fontWeight: '700', textAlign: 'center', padding: '4px 8px', width: '70%', boxSizing: 'border-box', lineHeight: '1.2' }}>{homeTeam}</div>
+              {/* 팀명 영역 (중앙) */}
+              <div style={{ 
+                fontSize: `${teamNameFontSize}px`, 
+                fontWeight: '700', 
+                textAlign: 'center', 
+                padding: '4px 8px', 
+                width: '70%', 
+                boxSizing: 'border-box', 
+                lineHeight: '1.2',
+                paddingRight: '48px'
+              }}>
+                {homeTeam}
+              </div>
+              {/* 로고 영역 (오른쪽 고정) */}
+              {homeLogoUrl && (
+                <div style={{ 
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '35px',
+                  height: '35px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <img 
+                    src={homeLogoUrl} 
+                    alt={`${homeTeam} 로고`}
+                    style={{ 
+                      maxHeight: '100%',
+                      maxWidth: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

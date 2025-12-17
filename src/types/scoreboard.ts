@@ -22,10 +22,14 @@ export interface GameInfoRow {
   date_time: string;
   home_team: string;
   home_bg_color: string;
+  home_team_logo_url?: string;
   away_team: string;
   away_bg_color: string;
+  away_team_logo_url?: string;
   field: string;
   is_live: boolean;
+  title_font_size?: number;
+  team_name_font_size?: number;
   created_at: string;
   updated_at: string;
 }

@@ -30,6 +30,10 @@ export class SupabaseGameinfoService implements GameInfoService {
             away_team: gameInfo.away_team,
             home_bg_color: gameInfo.home_bg_color,
             away_bg_color: gameInfo.away_bg_color,
+            home_team_logo_url: gameInfo.home_team_logo_url,
+            away_team_logo_url: gameInfo.away_team_logo_url,
+            title_font_size: gameInfo.title_font_size,
+            team_name_font_size: gameInfo.team_name_font_size,
             field: gameInfo.field,
             is_live: gameInfo.is_live
           })

@@ -23,6 +23,14 @@ export default function AdminPanel() {
         home_bg_color: '#374151',
         away_bg_color: '#f7f7f7'
     })
+    const [fontSizes, setFontSizes] = useState({
+        title_font_size: 30,
+        team_name_font_size: 36
+    })
+    const [logoUrls, setLogoUrls] = useState({
+        home_team_logo_url: '',
+        away_team_logo_url: ''
+    })
 
     useEffect(() => {
         loadGames()
@@ -104,6 +112,14 @@ export default function AdminPanel() {
             home_bg_color: game.home_bg_color || '#374151',
             away_bg_color: game.away_bg_color || '#f7f7f7'
         })
+        setFontSizes({
+            title_font_size: game.title_font_size || 30,
+            team_name_font_size: game.team_name_font_size || 36
+        })
+        setLogoUrls({
+            home_team_logo_url: game.home_team_logo_url || '',
+            away_team_logo_url: game.away_team_logo_url || ''
+        })
         setShowThemeModal(true)
     }
 
@@ -114,20 +130,24 @@ export default function AdminPanel() {
             const updatedGame = {
                 ...selectedGame,
                 home_bg_color: themeColors.home_bg_color,
-                away_bg_color: themeColors.away_bg_color
+                away_bg_color: themeColors.away_bg_color,
+                title_font_size: fontSizes.title_font_size,
+                team_name_font_size: fontSizes.team_name_font_size,
+                home_team_logo_url: logoUrls.home_team_logo_url,
+                away_team_logo_url: logoUrls.away_team_logo_url
             }
             
             const result = await gameInfoService.updateGameInfo(updatedGame)
             if (result.success) {
-                alert('테마가 성공적으로 변경되었습니다.')
+                alert('설정이 성공적으로 변경되었습니다.')
                 setShowThemeModal(false)
                 loadGames() // 목록 새로고침
             } else {
-                alert('테마 변경에 실패했습니다: ' + result.error)
+                alert('설정 변경에 실패했습니다: ' + result.error)
             }
         } catch (err) {
-            console.error('Failed to update theme:', err)
-            alert('테마 변경에 실패했습니다.')
+            console.error('Failed to update settings:', err)
+            alert('설정 변경에 실패했습니다.')
         }
     }
 
@@ -193,13 +213,156 @@ export default function AdminPanel() {
 
             {/* 테마 변경 모달 */}
             {showThemeModal && selectedGame && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4">
-                        <h3 className="text-xl font-bold text-white mb-4">테마 변경 - {selectedGame.title}</h3>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-8">
+                    <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 my-8">
+                        <h3 className="text-xl font-bold text-white mb-4">스코어보드 설정 - {selectedGame.title}</h3>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                            {/* 로고 설정 섹션 */}
+                            <div className="border-b border-gray-700 pb-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-lg font-semibold text-white">🏫 팀 로고</h4>
+                                    <a 
+                                        href="http://www.korea-baseball.com/info/team/team_list" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-blue-400 hover:text-blue-300 underline transition-colors"
+                                    >
+                                        📋 팀 로고 참조 사이트
+                                    </a>
+                                </div>
+                                <p className="text-xs text-gray-400 mb-3">
+                                    팀 로고 이미지 URL을 입력하세요. 대한야구소프트볼협회 팀 정보에서 로고를 확인할 수 있습니다.
+                                </p>
+                                
+                                {/* 홈팀 로고 */}
+                                <div className="mb-4">
+                                    <label className="block text-white text-sm font-medium mb-2">
+                                        홈팀 ({selectedGame.home_team}) 로고 URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={logoUrls.home_team_logo_url}
+                                        onChange={(e) => setLogoUrls(prev => ({
+                                            ...prev,
+                                            home_team_logo_url: e.target.value
+                                        }))}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+                                        placeholder="https://example.com/logo.png"
+                                    />
+                                    {logoUrls.home_team_logo_url && (
+                                        <img 
+                                            src={logoUrls.home_team_logo_url} 
+                                            alt="홈팀 로고 미리보기"
+                                            className="mt-2 h-12 object-contain bg-white rounded p-1"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* 원정팀 로고 */}
+                                <div>
+                                    <label className="block text-white text-sm font-medium mb-2">
+                                        원정팀 ({selectedGame.away_team}) 로고 URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={logoUrls.away_team_logo_url}
+                                        onChange={(e) => setLogoUrls(prev => ({
+                                            ...prev,
+                                            away_team_logo_url: e.target.value
+                                        }))}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+                                        placeholder="https://example.com/logo.png"
+                                    />
+                                    {logoUrls.away_team_logo_url && (
+                                        <img 
+                                            src={logoUrls.away_team_logo_url} 
+                                            alt="원정팀 로고 미리보기"
+                                            className="mt-2 h-12 object-contain bg-white rounded p-1"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 폰트 크기 설정 섹션 */}
+                            <div className="border-b border-gray-700 pb-4">
+                                <h4 className="text-lg font-semibold text-white mb-3">📏 폰트 크기</h4>
+                                
+                                {/* 타이틀 폰트 크기 */}
+                                <div className="mb-4">
+                                    <label className="block text-white text-sm font-medium mb-2">
+                                        시합 타이틀 폰트 크기 (px)
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="range"
+                                            min="16"
+                                            max="50"
+                                            value={fontSizes.title_font_size}
+                                            onChange={(e) => setFontSizes(prev => ({
+                                                ...prev,
+                                                title_font_size: Number(e.target.value)
+                                            }))}
+                                            className="flex-1"
+                                        />
+                                        <input
+                                            type="number"
+                                            min="16"
+                                            max="50"
+                                            value={fontSizes.title_font_size}
+                                            onChange={(e) => setFontSizes(prev => ({
+                                                ...prev,
+                                                title_font_size: Number(e.target.value)
+                                            }))}
+                                            className="w-20 bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 text-center"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* 팀명 폰트 크기 */}
+                                <div>
+                                    <label className="block text-white text-sm font-medium mb-2">
+                                        팀명 폰트 크기 (px)
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="range"
+                                            min="20"
+                                            max="60"
+                                            value={fontSizes.team_name_font_size}
+                                            onChange={(e) => setFontSizes(prev => ({
+                                                ...prev,
+                                                team_name_font_size: Number(e.target.value)
+                                            }))}
+                                            className="flex-1"
+                                        />
+                                        <input
+                                            type="number"
+                                            min="20"
+                                            max="60"
+                                            value={fontSizes.team_name_font_size}
+                                            onChange={(e) => setFontSizes(prev => ({
+                                                ...prev,
+                                                team_name_font_size: Number(e.target.value)
+                                            }))}
+                                            className="w-20 bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 text-center"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 배경색 설정 섹션 */}
+                            <div className="pb-4">
+                                <h4 className="text-lg font-semibold text-white mb-3">🎨 배경색</h4>
+                                
                             {/* 홈팀 색상 */}
-                            <div>
+                            <div className="mb-4">
                                 <label className="block text-white text-sm font-medium mb-2">
                                     홈팀 ({selectedGame.home_team}) 배경색
                                 </label>
@@ -240,7 +403,7 @@ export default function AdminPanel() {
                             </div>
 
                             {/* 원정팀 색상 */}
-                            <div>
+                            <div className="mb-4">
                                 <label className="block text-white text-sm font-medium mb-2">
                                     원정팀 ({selectedGame.away_team}) 배경색
                                 </label>
@@ -289,21 +452,62 @@ export default function AdminPanel() {
                             {/* 미리보기 */}
                             <div className="bg-gray-700 rounded-lg p-4">
                                 <h4 className="text-white text-sm font-medium mb-2">미리보기</h4>
+                                
+                                {/* 타이틀 미리보기 */}
+                                <div 
+                                    className="bg-gray-300 text-black font-bold text-center py-2 rounded mb-2"
+                                    style={{ fontSize: `${fontSizes.title_font_size * 0.6}px` }}
+                                >
+                                    {selectedGame.title}
+                                </div>
+                                
+                                {/* 팀 정보 미리보기 */}
                                 <div className="flex items-center justify-between">
                                     <div 
-                                        className="text-center flex-1 p-2 rounded"
+                                        className="text-center flex-1 p-3 rounded flex flex-col items-center"
                                         style={{ backgroundColor: themeColors.away_bg_color }}
                                     >
-                                        <div className={`text-lg font-semibold ${getContrastYIQ(themeColors.away_bg_color)}`}>{selectedGame.away_team}</div>
+                                        {logoUrls.away_team_logo_url && (
+                                            <img 
+                                                src={logoUrls.away_team_logo_url} 
+                                                alt="원정팀 로고"
+                                                className="h-8 mb-1 object-contain"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                        <div 
+                                            className={`font-semibold ${getContrastYIQ(themeColors.away_bg_color)}`}
+                                            style={{ fontSize: `${fontSizes.team_name_font_size * 0.5}px` }}
+                                        >
+                                            {selectedGame.away_team}
+                                        </div>
                                         <div className={`text-xs ${getContrastYIQ(themeColors.away_bg_color)}`}>원정팀</div>
                                     </div>
                                     <div className="text-white font-bold mx-2">VS</div>
                                     <div 
-                                        className="text-center flex-1 p-2 rounded"
+                                        className="text-center flex-1 p-3 rounded flex flex-col items-center"
                                         style={{ backgroundColor: themeColors.home_bg_color }}
                                     >
-                                        <div className={`text-lg font-semibold ${getContrastYIQ(themeColors.home_bg_color)}`}>{selectedGame.home_team}</div>
+                                        {logoUrls.home_team_logo_url && (
+                                            <img 
+                                                src={logoUrls.home_team_logo_url} 
+                                                alt="홈팀 로고"
+                                                className="h-8 mb-1 object-contain"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                        <div 
+                                            className={`font-semibold ${getContrastYIQ(themeColors.home_bg_color)}`}
+                                            style={{ fontSize: `${fontSizes.team_name_font_size * 0.5}px` }}
+                                        >
+                                            {selectedGame.home_team}
+                                        </div>
                                         <div className={`text-xs ${getContrastYIQ(themeColors.home_bg_color)}`}>홈팀</div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
