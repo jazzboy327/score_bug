@@ -79,8 +79,24 @@ const getStatusBadge = (isLive: boolean, date_time: string) => {
     )
 }
 
+interface ThemeType {
+    name: string;
+    background: string;
+    card: string;
+    cardInner: string;
+    scoreBox: string;
+    cardHover: string;
+    buttonPrimary: string;
+    buttonSecondary: string;
+    buttonTheme: string;
+    accent: string;
+    border: string;
+    statusLive: string;
+    statusWait: string;
+}
+
 // 메인 카드 컴포넌트
-export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange }: { game: GameInfoWithScore, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void }) => {
+export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange }: { game: GameInfoWithScore, theme?: ThemeType, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -101,8 +117,18 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
         };
     }, [isMenuOpen]);
 
+    const cardClass = theme?.card || 'bg-gray-800';
+    const cardInnerClass = theme?.cardInner || 'bg-gray-900/60';
+    const scoreBoxClass = theme?.scoreBox || 'bg-slate-900/80';
+    const borderClass = theme?.border || 'border-gray-700';
+    const hoverClass = theme?.cardHover || 'hover:shadow-2xl';
+    const accentClass = theme?.accent || 'text-yellow-400';
+    const buttonPrimaryClass = theme?.buttonPrimary || 'from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700';
+    const buttonSecondaryClass = theme?.buttonSecondary || 'bg-slate-700 hover:bg-slate-600';
+    const buttonThemeClass = theme?.buttonTheme || 'bg-gray-700 hover:bg-gray-600';
+
     return (
-        <div className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700 flex flex-col">
+        <div className={`${cardClass} rounded-2xl p-6 shadow-lg ${hoverClass} transition-all duration-500 transform hover:-translate-y-2 border ${borderClass} flex flex-col`}>
             
             {/* 카드 헤더 */}
             <div className="flex justify-between items-start mb-4 relative">
@@ -138,7 +164,7 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
 
             {/* 팀 정보 및 스코어 (flex-grow로 남는 공간 채우기) */}
             <div className="flex-grow">
-                <div className="bg-gray-700 rounded-xl p-4 mb-4">
+                <div className={`${cardInnerClass} rounded-xl p-4 mb-4 border ${borderClass}`}>
                     <div className="flex items-center justify-between mb-3">
                         <div className="text-center flex-1">
                             <div className="text-lg font-semibold text-white">{game.away_team}</div>
@@ -167,13 +193,13 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
                     
                      {/* 스코어 정보 - 기존과 동일. 위치만 조정 */}
                      {game.current_score ? (
-                        <div className="bg-gray-900/70 rounded-lg p-3">
+                        <div className={`${scoreBoxClass} rounded-lg p-3 border ${borderClass}`}>
                             <div className="flex items-center justify-between">
                                 <div className="text-center flex-1">
                                     <div className="text-2xl font-bold text-white">{game.current_score.a_score}</div>
                                 </div>
                                 <div className="text-center w-1/3">
-                                    <div className="text-sm text-yellow-400 font-semibold">{game.current_score.inning}{game.current_score.is_top ? '초' : '말'}</div>
+                                    <div className={`text-sm ${accentClass} font-semibold`}>{game.current_score.inning}{game.current_score.is_top ? '초' : '말'}</div>
                                 </div>
                                 <div className="text-center flex-1">
                                     <div className="text-2xl font-bold text-white">{game.current_score.h_score}</div>
@@ -194,20 +220,20 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
             <div className="space-y-3">
                  <button
                     onClick={() => onOpenController(game.game_id)}
-                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm shadow-lg hover:shadow-purple-500/20"
+                    className={`w-full bg-gradient-to-r ${buttonPrimaryClass} text-white py-3 px-4 rounded-xl font-bold transition-all duration-200 text-sm shadow-lg hover:shadow-xl`}
                 >
                     🎮 스코어보드 컨트롤러
                 </button>
                 <div className="flex space-x-2">
                     <button
                         onClick={() => onOverlayView(game.game_id, 'a')}
-                        className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-500 transition-all duration-200 text-sm"
+                        className={`flex-1 ${buttonSecondaryClass} text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm`}
                     >
                         📺 A타입 보기(700x345)
                     </button>
                     <button
                         onClick={() => onOverlayView(game.game_id, 'b')}
-                        className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-500 transition-all duration-200 text-sm"
+                        className={`flex-1 ${buttonSecondaryClass} text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm`}
                     >
                         📺 B타입 보기(1200x60)
                     </button>
@@ -215,7 +241,7 @@ export const GameCard = ({ game , onOverlayView, onOpenController, onEdit, onDel
                 <div className="flex space-x-2">
                     <button
                         onClick={() => onThemeChange(game)}
-                        className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-all duration-200 text-sm"
+                        className={`flex-1 ${buttonThemeClass} text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm`}
                     >
                         🎨 테마 변경
                     </button>

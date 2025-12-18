@@ -31,6 +31,7 @@ export default function AdminPanel() {
         home_team_logo_url: '',
         away_team_logo_url: ''
     })
+    const [currentTheme, setCurrentTheme] = useState<'baseball-green' | 'night-game' | 'classic-stadium' | 'premium-dark' | 'sky-blue'>('premium-dark')
 
     useEffect(() => {
         loadGames()
@@ -151,16 +152,98 @@ export default function AdminPanel() {
         }
     }
 
+    // 테마별 색상 정의 - 완전히 다른 색상 계열
+    const themes = {
+        'premium-dark': {
+            name: '💎 프리미엄 다크',
+            background: 'bg-gradient-to-br from-gray-900 to-gray-800',
+            card: 'bg-gray-800',
+            cardInner: 'bg-gray-700',
+            scoreBox: 'bg-gray-900/70',
+            cardHover: 'hover:shadow-2xl',
+            buttonPrimary: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+            buttonSecondary: 'bg-gray-600 hover:bg-gray-500',
+            buttonTheme: 'bg-indigo-600 hover:bg-indigo-700',
+            accent: 'text-yellow-400',
+            border: 'border-gray-700',
+            statusLive: 'bg-red-500',
+            statusWait: 'bg-gray-500'
+        },
+        'baseball-green': {
+            name: '🌿 포레스트 그린',
+            background: 'bg-gradient-to-br from-emerald-950 via-green-900 to-lime-950',
+            card: 'bg-gradient-to-br from-emerald-900/95 to-lime-900/95',
+            cardInner: 'bg-emerald-950/70',
+            scoreBox: 'bg-lime-900/70',
+            cardHover: 'hover:shadow-lime-500/40',
+            buttonPrimary: 'from-lime-400 to-emerald-500 hover:from-lime-500 hover:to-emerald-600',
+            buttonSecondary: 'bg-emerald-700 hover:bg-emerald-600',
+            buttonTheme: 'bg-lime-700 hover:bg-lime-600',
+            accent: 'text-lime-300',
+            border: 'border-lime-600',
+            statusLive: 'bg-lime-400',
+            statusWait: 'bg-emerald-600'
+        },
+        'night-game': {
+            name: '🎆 네온 퍼플',
+            background: 'bg-gradient-to-br from-purple-950 via-fuchsia-950 to-pink-950',
+            card: 'bg-gradient-to-br from-purple-900/95 to-fuchsia-900/95',
+            cardInner: 'bg-purple-950/70',
+            scoreBox: 'bg-fuchsia-900/70',
+            cardHover: 'hover:shadow-fuchsia-500/40',
+            buttonPrimary: 'from-fuchsia-400 to-pink-500 hover:from-fuchsia-500 hover:to-pink-600',
+            buttonSecondary: 'bg-purple-700 hover:bg-purple-600',
+            buttonTheme: 'bg-fuchsia-700 hover:bg-fuchsia-600',
+            accent: 'text-fuchsia-300',
+            border: 'border-fuchsia-600',
+            statusLive: 'bg-fuchsia-400',
+            statusWait: 'bg-purple-600'
+        },
+        'classic-stadium': {
+            name: '🔥 파이어 레드',
+            background: 'bg-gradient-to-br from-red-950 via-rose-900 to-orange-950',
+            card: 'bg-gradient-to-br from-red-900/95 to-orange-900/95',
+            cardInner: 'bg-red-950/70',
+            scoreBox: 'bg-orange-900/70',
+            cardHover: 'hover:shadow-orange-500/40',
+            buttonPrimary: 'from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600',
+            buttonSecondary: 'bg-red-800 hover:bg-red-700',
+            buttonTheme: 'bg-orange-700 hover:bg-orange-600',
+            accent: 'text-orange-300',
+            border: 'border-orange-600',
+            statusLive: 'bg-orange-400',
+            statusWait: 'bg-red-700'
+        },
+
+        'sky-blue': {
+            name: '🌊 오션 블루',
+            background: 'bg-gradient-to-br from-blue-950 via-cyan-900 to-teal-950',
+            card: 'bg-gradient-to-br from-blue-900/95 to-cyan-900/95',
+            cardInner: 'bg-blue-950/70',
+            scoreBox: 'bg-cyan-900/70',
+            cardHover: 'hover:shadow-cyan-500/40',
+            buttonPrimary: 'from-cyan-300 to-blue-500 hover:from-cyan-400 hover:to-blue-600',
+            buttonSecondary: 'bg-blue-700 hover:bg-blue-600',
+            buttonTheme: 'bg-cyan-700 hover:bg-cyan-600',
+            accent: 'text-cyan-300',
+            border: 'border-cyan-600',
+            statusLive: 'bg-cyan-400',
+            statusWait: 'bg-blue-700'
+        }
+    }
+
+    const theme = themes[currentTheme]
+
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#222] flex items-center justify-center">
+            <div className={`min-h-screen ${theme.background} flex items-center justify-center`}>
                 <div className="text-white text-xl">로딩 중...</div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-6">
+        <div className={`min-h-screen ${theme.background} p-6 transition-colors duration-500`}>
             <div className="max-w-7xl mx-auto">
                 {/* 헤더 */}
                 <div className="flex justify-between items-center mb-8">
@@ -168,12 +251,24 @@ export default function AdminPanel() {
                         <h1 className="text-4xl font-bold text-white mb-2">경기 목록</h1>
                         <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
                     </div>
-                    <button
-                        onClick={handleCreateGame}
-                        className="w-30 h-10 bg-gradient-to-r from-green-500 to-green-600 text-sm text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    >
-                        + New Game
-                    </button>
+                    <div className="flex gap-3 items-center">
+                        {/* 테마 선택 드롭다운 */}
+                        <select
+                            value={currentTheme}
+                            onChange={(e) => setCurrentTheme(e.target.value as any)}
+                            className="px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 text-sm transition-all"
+                        >
+                            {Object.entries(themes).map(([key, value]) => (
+                                <option key={key} value={key}>{value.name}</option>
+                            ))}
+                        </select>
+                        <button
+                            onClick={handleCreateGame}
+                            className={`w-30 h-10 bg-gradient-to-r ${theme.buttonPrimary} text-sm text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-bold`}
+                        >
+                            + New Game
+                        </button>
+                    </div>
                 </div>
 
                 {error && (
@@ -185,7 +280,7 @@ export default function AdminPanel() {
                 {/* 경기 목록 */}
                 <div className="mb-6">
                     {games.length === 0 ? (
-                        <div className="bg-gray-800 rounded-2xl p-12 text-center shadow-lg">
+                        <div className={`${theme.card} rounded-2xl p-12 text-center shadow-lg border ${theme.border}`}>
                             <div className="text-6xl mb-4">⚾</div>
                             <p className="text-gray-400 text-xl">등록된 경기가 없습니다.</p>
                             <p className="text-gray-500 mt-2">새 경기를 등록해보세요!</p>
@@ -197,6 +292,7 @@ export default function AdminPanel() {
                                 <GameCard 
                                     key={game.game_id} 
                                     game={game}
+                                    theme={theme}
                                     // 필요한 핸들러 함수들을 props로 전달
                                     onOverlayView={handleOverlayView}
                                     onOpenController={handleOpenController}
