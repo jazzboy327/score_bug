@@ -60,7 +60,8 @@ export class SupabaseGameinfoService implements GameInfoService {
         const { data, error } = await supabase
             .from('game_info')
             .select('*')
-            .order('created_at', { ascending: false })
+            .order('date_time', { ascending: false })
+            .order('updated_at', { ascending: false })
             .eq('user_id', await this.getUserId());
 
         if (error) throw error;
