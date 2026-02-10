@@ -8,7 +8,7 @@ ALTER TABLE game_info
 ADD COLUMN IF NOT EXISTS home_team_logo_url TEXT,
 ADD COLUMN IF NOT EXISTS away_team_logo_url TEXT,
 ADD COLUMN IF NOT EXISTS title_font_size INTEGER DEFAULT 30,
-ADD COLUMN IF NOT EXISTS team_name_font_size INTEGER DEFAULT 36;
+ADD COLUMN IF NOT EXISTS team_name_font_size INTEGER DEFAULT 30;
 
 -- 컬럼 설명 추가
 COMMENT ON COLUMN game_info.home_team_logo_url IS '홈팀 로고 이미지 URL';
@@ -20,7 +20,7 @@ COMMENT ON COLUMN game_info.team_name_font_size IS '팀명 폰트 크기 (px)';
 UPDATE game_info 
 SET 
     title_font_size = 30,
-    team_name_font_size = 36
+    team_name_font_size = 30
 WHERE 
     title_font_size IS NULL 
     OR team_name_font_size IS NULL;

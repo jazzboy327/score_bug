@@ -149,7 +149,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     home_bg_color: '#374151',
                     away_bg_color: '#f7f7f7',
                     title_font_size: 27, // 27px
-                    team_name_font_size: 32 // 32px
+                    team_name_font_size: 30 // 30px
                 })
 
                 if (newGame) {

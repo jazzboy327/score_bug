@@ -112,7 +112,7 @@ vercel --prod
 
 새로운 경기를 생성할 때 기본값:
 - `title_font_size`: 30px
-- `team_name_font_size`: 36px
+- `team_name_font_size`: 30px
 - `home_team_logo_url`: NULL (로고 없음)
 - `away_team_logo_url`: NULL (로고 없음)
 
@@ -155,7 +155,7 @@ vercel --prod
 ALTER TABLE game_info ADD COLUMN home_team_logo_url TEXT;
 ALTER TABLE game_info ADD COLUMN away_team_logo_url TEXT;
 ALTER TABLE game_info ADD COLUMN title_font_size INTEGER DEFAULT 30;
-ALTER TABLE game_info ADD COLUMN team_name_font_size INTEGER DEFAULT 36;
+ALTER TABLE game_info ADD COLUMN team_name_font_size INTEGER DEFAULT 30;
 ```
 
 ## 📝 변경 파일 목록

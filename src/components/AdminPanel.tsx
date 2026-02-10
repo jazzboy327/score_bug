@@ -25,7 +25,7 @@ export default function AdminPanel() {
     })
     const [fontSizes, setFontSizes] = useState({
         title_font_size: 30,
-        team_name_font_size: 36
+        team_name_font_size: 30
     })
     const [logoUrls, setLogoUrls] = useState({
         home_team_logo_url: '',
@@ -115,7 +115,7 @@ export default function AdminPanel() {
         })
         setFontSizes({
             title_font_size: game.title_font_size || 30,
-            team_name_font_size: game.team_name_font_size || 36
+            team_name_font_size: game.team_name_font_size || 30
         })
         setLogoUrls({
             home_team_logo_url: game.home_team_logo_url || '',
