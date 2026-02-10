@@ -80,7 +80,8 @@ export class SupabaseGameinfoService implements GameInfoService {
                     is_top
                 )
             `)
-            .order('created_at', { ascending: false })
+            .order('date_time', { ascending: false })
+            .order('updated_at', { ascending: false })
             .eq('user_id', await this.getUserId());
 
 
