@@ -478,12 +478,14 @@ export default function AdminPanel() {
                                         <option value="#374151"></option>
                                         <option value="#1f2937"></option>
                                         <option value="#000000"></option>
+                                        <option value="#cd3131"></option>
+                                        <option value="#f97316"></option>
+                                        <option value="#00844a"></option>
+                                        <option value="#f5ec00"></option>
+                                        <option value="#e87e04"></option>
+                                        <option value="#efb716"></option>
+                                        <option value="#8b5cf6"></option>
                                         <option value="#ffffff"></option>
-                                        <option value="#ff0000"></option>
-                                        <option value="#00ff00"></option>
-                                        <option value="#0000ff"></option>
-                                        <option value="#ffff00"></option>
-                                        <option value="#ffa500"></option>
                                     </datalist>
                                     <input
                                         type="text"
@@ -515,22 +517,18 @@ export default function AdminPanel() {
                                         className="w-30 h-10 rounded border-2 border-gray-600 cursor-pointer"
                                     />
                                     <datalist id="bookmark-colors"> 
-                                        <option value="#ffffff"></option>
-                                        <option value="#f7f7f7"></option>
-                                        <option value="#e5e7eb"></option>
+                                    <option value="#f7f7f7"></option>
                                         <option value="#374151"></option>
                                         <option value="#1f2937"></option>
                                         <option value="#000000"></option>
-                                        <option value="#3b82f6"></option>
-                                        <option value="#ef4444"></option>
-                                        <option value="#22c55e"></option>
-                                        <option value="#eab308"></option>
+                                        <option value="#cd3131"></option>
                                         <option value="#f97316"></option>
+                                        <option value="#00844a"></option>
+                                        <option value="#f5ec00"></option>
+                                        <option value="#e87e04"></option>
+                                        <option value="#efb716"></option>
                                         <option value="#8b5cf6"></option>
-                                        <option value="#dc2626"></option>
-                                        <option value="#16a34a"></option>
-                                        <option value="#facc15"></option>
-
+                                        <option value="#ffffff"></option>
                                     </datalist>
                                     <input
                                         type="text"

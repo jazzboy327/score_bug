@@ -115,8 +115,8 @@ export default function ScoreboardB() {
       <div
         ref={containerRef}
         style={{
-          width: '1200px',
-          height: '60px',
+          width: '1210px',
+          height: '47px',
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
           opacity: 1,
@@ -269,7 +269,7 @@ export default function ScoreboardB() {
           margin: 0
         }}>
         {/* 이닝 정보 */}
-        <div style={{ display: 'flex', width: '60px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box', whiteSpace: 'nowrap', flexShrink: 0 }}>
+        <div style={{ display: 'flex', width: '50px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box', whiteSpace: 'nowrap', flexShrink: 0 }}>
           {inning} {isTop ? '▲' : '▼'}
         </div>
         {/* 주루 마름모 */}
@@ -277,10 +277,10 @@ export default function ScoreboardB() {
           {/* 2루 */}
           <div style={{ 
             position: 'absolute', 
-            top: '12px', 
+            top: '10px', 
             left: '50%', 
-            width: '16px', 
-            height: '16px', 
+            width: '14px', 
+            height: '14px', 
             transform: 'translateX(-50%) rotate(45deg)',
             backgroundColor: is_second ? '#eab308' : '#9ca3af',
             boxSizing: 'border-box',
@@ -290,10 +290,10 @@ export default function ScoreboardB() {
           {/* 1루 */}
           <div style={{ 
             position: 'absolute', 
-            bottom: '37%', 
-            right: '12px', 
-            width: '16px', 
-            height: '16px', 
+            bottom: '35%', 
+            right: '15px', 
+            width: '14px', 
+            height: '14px', 
             transform: 'translateY(50%) rotate(45deg)',
             backgroundColor: is_first ? '#eab308' : '#9ca3af',
             boxSizing: 'border-box',
@@ -303,10 +303,10 @@ export default function ScoreboardB() {
           {/* 3루 */}
           <div style={{ 
             position: 'absolute', 
-            bottom: '37%', 
-            left: '12px', 
-            width: '16px', 
-            height: '16px', 
+            bottom: '35%', 
+            left: '15px', 
+            width: '14px', 
+            height: '14px', 
             transform: 'translateY(50%) rotate(45deg)',
             backgroundColor: is_third ? '#eab308' : '#9ca3af',
             boxSizing: 'border-box',
