@@ -474,12 +474,12 @@ export default function AdminPanel() {
                                         className="w-30 h-10 rounded border-2 border-gray-600 cursor-pointer"
                                     />
                                     <datalist id="bookmark-colors"> 
-                                        <option value="#f7f7f7"></option>
-                                        <option value="#374151"></option>
+                                    <option value="#374151"></option>
                                         <option value="#1f2937"></option>
                                         <option value="#000000"></option>
                                         <option value="#cd3131"></option>
                                         <option value="#f97316"></option>
+                                        <option value="#2a388f"></option>
                                         <option value="#00844a"></option>
                                         <option value="#f5ec00"></option>
                                         <option value="#e87e04"></option>
@@ -523,6 +523,7 @@ export default function AdminPanel() {
                                         <option value="#000000"></option>
                                         <option value="#cd3131"></option>
                                         <option value="#f97316"></option>
+                                        <option value="#2a388f"></option>
                                         <option value="#00844a"></option>
                                         <option value="#f5ec00"></option>
                                         <option value="#e87e04"></option>
