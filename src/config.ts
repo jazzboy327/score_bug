@@ -2,6 +2,8 @@ export const Appconfig = {
     admin_panel_url: '/a',
     scoreboardA_template_url: '/o/:gameId/a',
     scoreboardB_template_url: '/o/:gameId/b',
+    scoreboardA_v2_template_url: '/o/:gameId/a2',
+    scoreboardB_v2_template_url: '/o/:gameId/b2',
     controller_url: '/c/:gameId',
     login_url: '/',
     register_url: '/r',

@@ -7,6 +7,8 @@ import Login from "./components/Login"
 import { Appconfig } from "./config"
 import ScoreboardA from "./components/ScoreboardA"
 import ScoreboardB from "./components/ScoreboardB"
+import ScoreboardAV2 from "./components/ScoreboardAV2"
+import ScoreboardBV2 from "./components/ScoreboardBV2"
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path={Appconfig.controller_url} element={<ScoreControl />} />
         <Route path={Appconfig.scoreboardA_template_url} element={<ScoreboardA />} />
         <Route path={Appconfig.scoreboardB_template_url} element={<ScoreboardB />} />
+        <Route path={Appconfig.scoreboardA_v2_template_url} element={<ScoreboardAV2 />} />
+        <Route path={Appconfig.scoreboardB_v2_template_url} element={<ScoreboardBV2 />} />
       </Routes>
     </BrowserRouter>
   )

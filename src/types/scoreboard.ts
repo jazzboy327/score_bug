@@ -59,3 +59,16 @@ export interface ScoreService {
   getScore(gameId: number): Promise<ScoreRow | null>;
   createScore(gameId: number): Promise<ScoreRow | null>;
 }
+
+export type OverlayPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right';
+
+export interface OverlayControlPayload {
+  position: OverlayPosition;
+  scale: number;
+}

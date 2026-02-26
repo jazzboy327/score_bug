@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
-import type { ScoreRow } from "../types/scoreboard"
+import type { ScoreRow, OverlayPosition } from "../types/scoreboard"
 import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
 import { SupabaseScoreService } from "../services/SupabaseScoreService"
+import { supabase } from "../utils/supabaseClient"
 
 const gameInfoService = new SupabaseGameinfoService();
 const scoreService = new SupabaseScoreService();
@@ -13,6 +14,9 @@ export default function ScoreControl() {
     const [score, setScore] = useState<ScoreRow | null>(null)
     const [gameInfo, setGameInfo] = useState<any>(null)
     // const [ setGameInfo] = useState<GameInfoRow | null>(null)
+    const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
+    const [overlayScale, setOverlayScale] = useState(1.0)
+    const overlayChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
     // 이닝 조작
     const handleInningChange = async (increment: boolean) => {
@@ -172,6 +176,25 @@ export default function ScoreControl() {
         }
     };
 
+    const broadcastOverlayUpdate = (position: OverlayPosition, scale: number) => {
+        if (!overlayChannelRef.current) return
+        overlayChannelRef.current.send({
+            type: 'broadcast',
+            event: 'OVERLAY_UPDATE',
+            payload: { position, scale },
+        })
+    }
+
+    const handlePositionChange = (position: OverlayPosition) => {
+        setOverlayPosition(position)
+        broadcastOverlayUpdate(position, overlayScale)
+    }
+
+    const handleScaleChange = (scale: number) => {
+        setOverlayScale(scale)
+        broadcastOverlayUpdate(overlayPosition, scale)
+    }
+
     useEffect(() => {
         const fetchScore = async () => {
             const data = await scoreService.getScore(Number(gameId));
@@ -198,12 +221,18 @@ export default function ScoreControl() {
             }
         });
 
+        overlayChannelRef.current = supabase.channel(`overlay-control-${gameId}`)
+        overlayChannelRef.current.subscribe()
+
         fetchScore();
         fetchGameInfo();
 
         return () => {
             unsubscribeScore();
             unsubscribeGameInfo();
+            if (overlayChannelRef.current) {
+                supabase.removeChannel(overlayChannelRef.current)
+            }
         }
     }, [gameId]);
 
@@ -223,6 +252,12 @@ export default function ScoreControl() {
           {/* 게임 제목 */}
           <div className="text-center py-2">
             <div className="text-white text-xl font-bold tracking-wide font-display">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
+          </div>
+          {/* 버전 구분 레이블 */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#444] text-gray-300">V1</span>
+            <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#444] text-gray-300">V2</span>
+            <span className="text-gray-500 text-xs">공통 제어</span>
           </div>
           {/* 현황판 */}
           <div className="flex flex-row items-start justify-center mb-1 mt-3">
@@ -415,18 +450,66 @@ export default function ScoreControl() {
 
           {/* 초기화 버튼들 */}
           <div className="flex flex-row items-center justify-center gap-4 px-4">
-              <button 
+              <button
                   onClick={() => handleCountReset()}
                   className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
               >
                   볼카운트 초기화
               </button>
-              <button 
+              <button
                   onClick={() => handleBaseReset()}
                   className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
               >
                   베이스 초기화
               </button>
+          </div>
+
+          {/* 구분선 */}
+          <div className="w-full border-t border-gray-600 mt-6 mb-4"></div>
+
+          {/* V2 오버레이 제어 */}
+          <div className="flex flex-col items-center w-full px-4 pb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#f97316] text-white">V2</span>
+                <span className="text-white text-lg font-bold tracking-wide">오버레이 위치</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 w-full max-w-xs mb-5">
+                  {([
+                      { key: 'top-left',      label: '↖ 상좌' },
+                      { key: 'top-center',    label: '↑ 상중' },
+                      { key: 'top-right',     label: '↗ 상우' },
+                      { key: 'bottom-left',   label: '↙ 하좌' },
+                      { key: 'bottom-center', label: '↓ 하중' },
+                      { key: 'bottom-right',  label: '↘ 하우' },
+                  ] as { key: OverlayPosition; label: string }[]).map(({ key, label }) => (
+                      <button
+                          key={key}
+                          onClick={() => handlePositionChange(key)}
+                          className={`h-10 rounded-lg text-white text-sm font-medium transition-colors ${overlayPosition === key ? 'bg-[#f97316]' : 'bg-[#444] hover:bg-[#555]'}`}
+                      >
+                          {label}
+                      </button>
+                  ))}
+              </div>
+              <div className="w-full max-w-xs">
+                  <div className="flex items-center justify-between mb-2">
+                      <div className="text-white text-lg font-bold">스케일</div>
+                      <div className="text-[#f97316] text-lg font-bold">{overlayScale.toFixed(1)}×</div>
+                  </div>
+                  <input
+                      type="range"
+                      min={0.5}
+                      max={3.0}
+                      step={0.1}
+                      value={overlayScale}
+                      onChange={(e) => handleScaleChange(Number(e.target.value))}
+                      className="w-full accent-[#f97316]"
+                  />
+                  <div className="flex justify-between text-gray-400 text-xs mt-1">
+                      <span>0.5×</span>
+                      <span>3.0×</span>
+                  </div>
+              </div>
           </div>
         </div>
       )
