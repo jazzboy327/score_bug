@@ -328,9 +328,11 @@ export default function ScoreControl() {
           <div className="flex flex-row gap-3 px-4 mb-3">
               <div className="flex flex-col items-center w-full">
                   <div className="text-gray-400 text-xs mb-1.5">이닝</div>
-                  <div className="flex items-center gap-2 w-full">
+                  <div className="flex items-center gap-1 w-full">
                       <button onClick={() => handleInningChange(false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
-                      <div className="text-white text-2xl font-bold w-8 text-center">{inning}</div>
+                      <div className="flex flex-col items-center justify-center w-20">
+                          <div className={`text-xl font-bold leading-tight ${isTop ? 'text-[#f97316]' : 'text-[#60a5fa]'}`}>{inning}{isTop ? '초' : '말'}</div>
+                      </div>
                       <button onClick={() => handleInningChange(true)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">+</button>
                   </div>
               </div>
