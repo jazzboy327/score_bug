@@ -84,19 +84,6 @@ export default function ScoreControl() {
         }
     };
 
-    // 초말 토글
-    const handleTopBottomToggle = async () => {
-        if (!score) return;
-        const updatedScore = { ...score };
-        updatedScore.is_top = !score.is_top;
-        try {
-            await scoreService.updateLiveScore(updatedScore);
-            setScore(updatedScore);
-        } catch (error) {
-            console.error('Failed to update top/bottom:', error);
-        }
-    };
-
     // 베이스 토글
     const handleBaseToggle = async (base: 'first' | 'second' | 'third') => {
         if (!score) return;
