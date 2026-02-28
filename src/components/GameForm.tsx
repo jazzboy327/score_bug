@@ -75,7 +75,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
         h_team: '',
         game_date: '',
         game_time: '',
-        field: '경기장'
+        field: '경기장',
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
@@ -103,7 +103,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     h_team: gameData.home_team || '',
                     game_date: dateStr,
                     game_time: timeStr,
-                    field: gameData.field || ''
+                    field: gameData.field || '',
                 })
             }
         } catch (err) {
@@ -148,8 +148,8 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     is_live: true,
                     home_bg_color: '#374151',
                     away_bg_color: '#f7f7f7',
-                    title_font_size: 27, // 27px
-                    team_name_font_size: 30 // 30px
+                    title_font_size: 23,
+                    team_name_font_size: 25
                 })
 
                 if (newGame) {

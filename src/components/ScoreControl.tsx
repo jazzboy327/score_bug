@@ -16,6 +16,7 @@ export default function ScoreControl() {
     // const [ setGameInfo] = useState<GameInfoRow | null>(null)
     const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
     const [overlayScale, setOverlayScale] = useState(1.0)
+    const [positionOpen, setPositionOpen] = useState(false)
     const overlayChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
     // 이닝 조작
@@ -248,269 +249,177 @@ export default function ScoreControl() {
     const isThird = score?.is_third ?? false
     
     return (
-        <div className="bg-[#222] w-screen h-screen flex flex-col items-top  ">
-          {/* 게임 제목 */}
-          <div className="text-center py-2">
-            <div className="text-white text-xl font-bold tracking-wide font-display">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
-          </div>
-          {/* 버전 구분 레이블 */}
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#444] text-gray-300">V1</span>
-            <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#444] text-gray-300">V2</span>
-            <span className="text-gray-500 text-xs">공통 제어</span>
-          </div>
-          {/* 현황판 */}
-          <div className="flex flex-row items-start justify-center mb-1 mt-3">
-            {/* 이닝 */}
-            <div className="flex flex-col items-center justify-center mr-10">
-              <div className="text-white text-xl font-bold mb-3 tracking-wide">스코어</div>
-              <div className="flex flex-row">
-                <div className="text-white text-3xl font-bold mb-2 tracking-wide">{a_score} : {h_score}</div>
-              </div>
-              <div className="flex flex-row">
-                <div className="text-white text-2xl font-bold mb-2 tracking-wide">{inning}{isTop ? ' ▲' : ' ▼'}</div>
+        <div className="bg-[#222] w-screen min-h-screen flex flex-col overflow-y-auto select-none">
 
-              </div>
+          {/* 게임 제목 */}
+          <div className="text-center pt-3 pb-2 px-4">
+            <div className="text-white text-lg font-bold tracking-wide">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
+          </div>
+
+          {/* 현황 표시 (컴팩트 배너) */}
+          <div className="flex flex-row items-center justify-around px-4 py-3 bg-[#2a2a2a] mx-3 rounded-xl mb-4">
+            {/* 스코어 + 이닝 */}
+            <div className="flex flex-col items-center">
+              <div className="text-white text-2xl font-bold">{a_score} : {h_score}</div>
+              <div className="text-gray-300 text-sm font-bold mt-0.5">{inning}{isTop ? ' ▲' : ' ▼'}</div>
             </div>
             {/* 볼카운트 */}
-            <div className="flex flex-col items-start justify-center mr-6">
-              <div className="text-white text-xl font-bold ml-1 mb-3 tracking-wide">볼카운트</div>
-              {/* B */}
-              <div className="flex flex-row items-center ml-1 mb-2">
-                <div className="w-6 h-6 rounded-full border-2 border-[#00c853] text-[#00c853] flex items-center justify-center text-lg font-bold mr-2">B</div>
-                <div className="flex flex-row">
-                  <div className={`w-4 h-4 rounded-full ${bCount > 0 ? 'bg-[#00c853]' : 'bg-[#888]'} mr-2`} />
-                  <div className={`w-4 h-4 rounded-full ${bCount > 1 ? 'bg-[#00c853]' : 'bg-[#888]'} mr-2`} />
-                  <div className={`w-4 h-4 rounded-full ${bCount > 2 ? 'bg-[#00c853]' : 'bg-[#888]'}`} />
-                </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#00c853] text-xs font-bold w-4">B</span>
+                {[0,1,2].map(i => <div key={i} className={`w-4 h-4 rounded-full ${bCount > i ? 'bg-[#00c853]' : 'bg-[#555]'}`} />)}
               </div>
-              {/* S */}
-              <div className="flex flex-row items-center ml-1 mb-2">
-                <div className="w-6 h-6 rounded-full border-2 border-[#ffd600] text-[#ffd600] flex items-center justify-center text-lg font-bold mr-2">S</div>
-                <div className="flex flex-row">
-                  <div className={`w-4 h-4 rounded-full ${sCount > 0 ? 'bg-[#ffd600]' : 'bg-[#888]'} mr-2`} />
-                  <div className={`w-4 h-4 rounded-full ${sCount > 1 ? 'bg-[#ffd600]' : 'bg-[#888]'}`} />
-                </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#ffd600] text-xs font-bold w-4">S</span>
+                {[0,1].map(i => <div key={i} className={`w-4 h-4 rounded-full ${sCount > i ? 'bg-[#ffd600]' : 'bg-[#555]'}`} />)}
               </div>
-              {/* O */}
-              <div className="flex flex-row items-center ml-1">
-                <div className="w-6 h-6 rounded-full border-2 border-[#ff1744] text-[#ff1744] flex items-center justify-center text-lg font-bold mr-2">O</div>
-                <div className="flex flex-row">
-                  <div className={`w-4 h-4 rounded-full ${oCount > 0 ? 'bg-[#ff1744]' : 'bg-[#888]'} mr-2`} />
-                  <div className={`w-4 h-4 rounded-full ${oCount > 1 ? 'bg-[#ff1744]' : 'bg-[#888]'}`} />
-                </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#ff1744] text-xs font-bold w-4">O</span>
+                {[0,1].map(i => <div key={i} className={`w-4 h-4 rounded-full ${oCount > i ? 'bg-[#ff1744]' : 'bg-[#555]'}`} />)}
               </div>
             </div>
             {/* 베이스 */}
-            <div className="flex flex-col items-center">
-              <div className="text-white text-xl font-bold tracking-wide">베이스</div>
-              <div className="relative w-24 h-20 mt-3">
-                {/* 2루 */}
-                <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 ${isSecond  ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
-                {/* 1루 */}
-                <div className={`absolute bottom-1/3 right-3 w-6 h-6 ${isFirst ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
-                {/* 3루 */}
-                <div className={`absolute bottom-1/3 left-3 w-6 h-6 ${isThird ? 'bg-[#FFA83F]' : 'bg-[#888]'} -rotate-45`} />
-              </div>
+            <div className="relative w-16 h-14">
+              <div className={`absolute top-0.5 left-1/2 -translate-x-1/2 w-5 h-5 ${isSecond ? 'bg-[#FFA83F]' : 'bg-[#555]'} -rotate-45`} />
+              <div className={`absolute bottom-1/3 right-1 w-5 h-5 ${isFirst ? 'bg-[#FFA83F]' : 'bg-[#555]'} -rotate-45`} />
+              <div className={`absolute bottom-1/3 left-1 w-5 h-5 ${isThird ? 'bg-[#FFA83F]' : 'bg-[#555]'} -rotate-45`} />
             </div>
           </div>
-          {/* 구분선 */}
-          <div className="w-full border-3 border-gray-600 my-2"></div>
 
-          {/* 컨트롤 패널: 2컬럼 레이아웃 */}
-          <div className="flex flex-row items-start justify-center gap-8 mb-6 px-4">
-              {/* 왼쪽 컬럼: 이닝/초말 */}
-              <div className="flex flex-col items-center justify-center w-1/2">
-                  <div className="text-white text-lg font-bold mb-2 tracking-wide">이닝</div>
-                  <div className="flex flex-row justify-center w-full mb-4">
-                      <button 
-                          onClick={() => handleInningChange(true)}
-                          className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                      >
-                          +
-                      </button>
-                      <button 
-                          onClick={() => handleInningChange(false)}
-                          className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                      >
-                          -
-                      </button>
-                  </div>
-                  <div className="text-white text-lg font-bold mb-2 tracking-wide">초/말</div>
-                  <div className="flex flex-row justify-center w-full">
-                      <label className="flex items-center mx-2">
-                          <input
-                              type="radio"
-                              name="topBottom"
-                              checked={isTop}
-                              onChange={() => handleTopBottomToggle()}
-                              className="sr-only"
-                          />
-                          <div className={`w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center ${isTop ? 'bg-[#ffd600] border-[#ffd600]' : 'bg-transparent'}`}>
-                              {isTop && <div className="w-3 h-3 bg-black rounded-full"></div>}
-                          </div>
-                          <span className="ml-2 text-white text-lg">초</span>
-                      </label>
-                      <label className="flex items-center mx-2">
-                          <input
-                              type="radio"
-                              name="topBottom"
-                              checked={!isTop}
-                              onChange={() => handleTopBottomToggle()}
-                              className="sr-only"
-                          />
-                          <div className={`w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center ${!isTop ? 'bg-[#ffd600] border-[#ffd600]' : 'bg-transparent'}`}>
-                              {!isTop && <div className="w-3 h-3 bg-black rounded-full"></div>}
-                          </div>
-                          <span className="ml-2 text-white text-lg">말</span>
-                      </label>
-                  </div>
-              </div>
-
-              {/* 오른쪽 컬럼: 점수 컨트롤 */}
-              <div className="flex flex-col items-center justify-center w-1/2">
-                  {/* A팀 점수 */}
-                  <div className="flex flex-col items-center justify-center w-full mb-4">
-                      <div className="text-white text-lg font-bold mb-2 tracking-wide">초공(A) 점수</div>
-                      <div className="flex flex-row items-center justify-center w-full">
-                          <button 
-                              onClick={() => handleScoreChange('a_score', true)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                          >
-                              +
-                          </button>
-                          <button 
-                              onClick={() => handleScoreChange('a_score', false)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                          >
-                              -
-                          </button>
-                      </div>
-                  </div>
-                  {/* B팀 점수 */}
-                  <div className="flex flex-col items-center justify-center w-full">
-                      <div className="text-white text-lg font-bold mb-2 tracking-wide">말공(B) 점수</div>
-                      <div className="flex flex-row justify-center w-full">
-                          <button 
-                              onClick={() => handleScoreChange('h_score', true)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                          >
-                              +
-                          </button>
-                          <button 
-                              onClick={() => handleScoreChange('h_score', false)}
-                              className="w-[35%] h-12 bg-[#444] text-white text-2xl font-bold rounded-lg mx-2"
-                          >
-                              -
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-            {/* 출루 베이스 수정 */}
-            <div className="flex flex-col items-center justify-center w-full mb-4">
-                <div className="text-white text-lg font-medium mr-4">출루</div>
-                    <div className="flex flex-row justify-center gap-4 px-4 w-full">
-                        <button 
-                            onClick={() => handleBaseToggle('first')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isFirst ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
-                        >1루</button>
-                        <button 
-                            onClick={() => handleBaseToggle('second')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isSecond ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
-                        >2루</button>
-                        <button 
-                            onClick={() => handleBaseToggle('third')}
-                            className={`w-[30%] md:w-[150px] h-12 rounded-lg text-white text-base md:text-lg font-medium ${isThird ? 'bg-[#FFA83F] text-black' : 'bg-[#444]'}`}
-                        >3루</button>
-                </div>
-            </div>
-          {/* 버튼 3개 */}
-          <div className="flex flex-row items-center justify-center gap-4 px-4 mb-6">
-              <button 
+          {/* ① BSO 버튼 — 가장 자주 탭 */}
+          <div className="flex flex-row gap-3 px-4 mb-2">
+              <button
                   onClick={() => handleCountChange('ball')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#00c853] text-white text-xl md:text-lg font-semibold rounded-lg"
-              >
-                  볼
-              </button>
-              <button 
+                  className="flex-1 h-20 bg-[#00c853] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+              >Ball</button>
+              <button
                   onClick={() => handleCountChange('strike')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#ffd600] text-white text-xl md:text-lg font-semibold rounded-lg"
-              >
-                  스트라이크
-              </button>
-              <button 
+                  className="flex-1 h-20 bg-[#d4a800] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+              >Strike</button>
+              <button
                   onClick={() => handleCountChange('out')}
-                  className="w-[30%] md:w-[200px] h-12 bg-[#ff1744] text-white text-xl md:text-lg font-semibold rounded-lg"
-              >
-                  아웃
-              </button>
+                  className="flex-1 h-20 bg-[#ff1744] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+              >Out</button>
           </div>
 
-          {/* 초기화 버튼들 */}
-          <div className="flex flex-row items-center justify-center gap-4 px-4">
+          {/* 볼카운트 초기화 */}
+          <div className="px-4 mb-4">
               <button
                   onClick={() => handleCountReset()}
-                  className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
-              >
-                  볼카운트 초기화
-              </button>
-              <button
-                  onClick={() => handleBaseReset()}
-                  className="w-[200px] h-12 bg-[#dc2626] text-white text-lg font-semibold rounded-lg hover:bg-[#b91c1c] transition-colors"
-              >
-                  베이스 초기화
-              </button>
+                  className="w-full h-14 bg-[#444] text-gray-200 text-base font-semibold rounded-2xl active:opacity-80"
+              >볼카운트 초기화</button>
           </div>
 
           {/* 구분선 */}
-          <div className="w-full border-t border-gray-600 mt-6 mb-4"></div>
+          <div className="w-full border-t border-gray-700 mb-4"></div>
 
-          {/* V2 오버레이 제어 */}
-          <div className="flex flex-col items-center w-full px-4 pb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#f97316] text-white">V2</span>
-                <span className="text-white text-lg font-bold tracking-wide">오버레이 위치</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 w-full max-w-xs mb-5">
-                  {([
-                      { key: 'top-left',      label: '↖ 상좌' },
-                      { key: 'top-center',    label: '↑ 상중' },
-                      { key: 'top-right',     label: '↗ 상우' },
-                      { key: 'bottom-left',   label: '↙ 하좌' },
-                      { key: 'bottom-center', label: '↓ 하중' },
-                      { key: 'bottom-right',  label: '↘ 하우' },
-                  ] as { key: OverlayPosition; label: string }[]).map(({ key, label }) => (
-                      <button
-                          key={key}
-                          onClick={() => handlePositionChange(key)}
-                          className={`h-10 rounded-lg text-white text-sm font-medium transition-colors ${overlayPosition === key ? 'bg-[#f97316]' : 'bg-[#444] hover:bg-[#555]'}`}
-                      >
-                          {label}
-                      </button>
-                  ))}
-              </div>
-              <div className="w-full max-w-xs">
-                  <div className="flex items-center justify-between mb-2">
-                      <div className="text-white text-lg font-bold">스케일</div>
-                      <div className="text-[#f97316] text-lg font-bold">{overlayScale.toFixed(1)}×</div>
-                  </div>
-                  <input
-                      type="range"
-                      min={0.5}
-                      max={3.0}
-                      step={0.1}
-                      value={overlayScale}
-                      onChange={(e) => handleScaleChange(Number(e.target.value))}
-                      className="w-full accent-[#f97316]"
-                  />
-                  <div className="flex justify-between text-gray-400 text-xs mt-1">
-                      <span>0.5×</span>
-                      <span>3.0×</span>
+          {/* ② 출루 + 베이스 초기화 */}
+          <div className="flex flex-row gap-2 px-4 mb-4">
+              <button
+                  onClick={() => handleBaseToggle('third')}
+                  className={`flex-1 h-14 rounded-2xl text-white text-lg font-bold active:opacity-80 ${isThird ? 'bg-[#FFA83F]' : 'bg-[#444]'}`}
+              >3루</button>
+              <button
+                  onClick={() => handleBaseToggle('second')}
+                  className={`flex-1 h-14 rounded-2xl text-white text-lg font-bold active:opacity-80 ${isSecond ? 'bg-[#FFA83F]' : 'bg-[#444]'}`}
+              >2루</button>
+              <button
+                  onClick={() => handleBaseToggle('first')}
+                  className={`flex-1 h-14 rounded-2xl text-white text-lg font-bold active:opacity-80 ${isFirst ? 'bg-[#FFA83F]' : 'bg-[#444]'}`}
+              >1루</button>
+              <button
+                  onClick={() => handleBaseReset()}
+                  className="w-20 h-14 bg-[#444] text-gray-300 text-xs font-semibold rounded-2xl active:opacity-80"
+              >베이스<br/>초기화</button>
+          </div>
+
+          {/* 구분선 */}
+          <div className="w-full border-t border-gray-700 mb-4"></div>
+
+          {/* ③ 이닝·초말 / 점수 */}
+          {/* 행1: 이닝 */}
+          <div className="flex flex-row gap-3 px-4 mb-3">
+              <div className="flex flex-col items-center w-full">
+                  <div className="text-gray-400 text-xs mb-1.5">이닝</div>
+                  <div className="flex items-center gap-2 w-full">
+                      <button onClick={() => handleInningChange(false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
+                      <div className="text-white text-2xl font-bold w-8 text-center">{inning}</div>
+                      <button onClick={() => handleInningChange(true)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">+</button>
                   </div>
               </div>
           </div>
+          {/* 행2: 초공A / 말공B 점수 */}
+          <div className="flex flex-row gap-3 px-4 mb-6">
+              <div className="flex flex-col items-center flex-1">
+                  <div className="text-gray-400 text-xs mb-1.5">초공(A) 점수</div>
+                  <div className="flex items-center gap-2 w-full">
+                      <button onClick={() => handleScoreChange('a_score', false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
+                      <div className="text-white text-2xl font-bold w-8 text-center">{a_score}</div>
+                      <button onClick={() => handleScoreChange('a_score', true)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">+</button>
+                  </div>
+              </div>
+              <div className="flex flex-col items-center flex-1">
+                  <div className="text-gray-400 text-xs mb-1.5">말공(B) 점수</div>
+                  <div className="flex items-center gap-2 w-full">
+                      <button onClick={() => handleScoreChange('h_score', false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
+                      <div className="text-white text-2xl font-bold w-8 text-center">{h_score}</div>
+                      <button onClick={() => handleScoreChange('h_score', true)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">+</button>
+                  </div>
+              </div>
+          </div>
+
+          {/* 오버레이 위치 (접기/펼치기) */}
+          <div className="w-full px-4 pb-10">
+              <button
+                  onClick={() => setPositionOpen(prev => !prev)}
+                  className="flex items-center justify-between w-full py-3 px-4 bg-[#333] rounded-2xl active:opacity-80"
+              >
+                  <span className="text-white text-base font-bold">오버레이 위치</span>
+                  <span className="text-gray-400">{positionOpen ? '▲' : '▼'}</span>
+              </button>
+              {positionOpen && (
+                  <div className="flex flex-col items-center mt-3">
+                      <div className="grid grid-cols-3 gap-2 w-full mb-5">
+                          {([
+                              { key: 'top-left',      label: '↖ 상좌' },
+                              { key: 'top-center',    label: '↑ 상중' },
+                              { key: 'top-right',     label: '↗ 상우' },
+                              { key: 'bottom-left',   label: '↙ 하좌' },
+                              { key: 'bottom-center', label: '↓ 하중' },
+                              { key: 'bottom-right',  label: '↘ 하우' },
+                          ] as { key: OverlayPosition; label: string }[]).map(({ key, label }) => (
+                              <button
+                                  key={key}
+                                  onClick={() => handlePositionChange(key)}
+                                  className={`h-12 rounded-xl text-white text-sm font-medium active:opacity-80 ${overlayPosition === key ? 'bg-[#f97316]' : 'bg-[#444]'}`}
+                              >
+                                  {label}
+                              </button>
+                          ))}
+                      </div>
+                      <div className="w-full">
+                          <div className="flex items-center justify-between mb-2">
+                              <div className="text-white text-base font-bold">스케일</div>
+                              <div className="text-[#f97316] text-base font-bold">{overlayScale.toFixed(1)}×</div>
+                          </div>
+                          <input
+                              type="range"
+                              min={0.5}
+                              max={3.0}
+                              step={0.1}
+                              value={overlayScale}
+                              onChange={(e) => handleScaleChange(Number(e.target.value))}
+                              className="w-full accent-[#f97316]"
+                          />
+                          <div className="flex justify-between text-gray-400 text-xs mt-1">
+                              <span>0.5×</span>
+                              <span>3.0×</span>
+                          </div>
+                      </div>
+                  </div>
+              )}
+          </div>
+
         </div>
       )
 }
