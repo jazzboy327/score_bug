@@ -277,15 +277,15 @@ export default function ScoreControl() {
           <div className="flex flex-row gap-3 px-4 mb-2">
               <button
                   onClick={() => handleCountChange('ball')}
-                  className="flex-1 h-20 bg-[#00c853] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+                  className="flex-1 h-15 bg-[#00c853] text-white text-2xl font-bold rounded-2xl active:opacity-80"
               >Ball</button>
               <button
                   onClick={() => handleCountChange('strike')}
-                  className="flex-1 h-20 bg-[#d4a800] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+                  className="flex-1 h-15 bg-[#d4a800] text-white text-2xl font-bold rounded-2xl active:opacity-80"
               >Strike</button>
               <button
                   onClick={() => handleCountChange('out')}
-                  className="flex-1 h-20 bg-[#ff1744] text-white text-2xl font-bold rounded-2xl active:opacity-80"
+                  className="flex-1 h-15 bg-[#ff1744] text-white text-2xl font-bold rounded-2xl active:opacity-80"
               >Out</button>
           </div>
 
