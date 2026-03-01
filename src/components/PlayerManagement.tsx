@@ -288,7 +288,7 @@ export default function PlayerManagement() {
                                     className="w-24 h-24 rounded-full bg-gray-700 border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer hover:border-green-500 transition-colors overflow-hidden mx-auto"
                                 >
                                     {photoPreview ? (
-                                        <img src={photoPreview} alt="미리보기" className="w-full h-full object-cover" />
+                                        <img src={photoPreview} alt="미리보기" className="w-full h-full object-cover object-top" />
                                     ) : (
                                         <span className="text-3xl">📷</span>
                                     )}

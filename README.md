@@ -1,20 +1,22 @@
-# Score Bug System
+# Score Bug System v2.0.0
 
 야구 경기 스코어보드 관리 시스템입니다. 실시간으로 경기 점수, 이닝, 볼카운트 등을 관리하고 다양한 형태의 스코어보드를 제공합니다.
 
 ## 🚀 주요 기능
 
-- **실시간 스코어보드**: A타입, B타입 두 가지 스코어보드 템플릿
+- **실시간 스코어보드**: A타입(세로형), B타입(가로형) 두 가지 스코어보드 템플릿
 - **경기 관리**: 경기 생성, 수정, 삭제
+- **팀 관리**: 팀 정보(로고, 배경색) 저장 및 재사용
+- **선수 관리**: 팀별 선수 등록/수정/삭제, 사진 업로드 _(v2.0 신규)_
+- **선수 프로필 팝업**: 방송 화면에 선수 카드 슬라이드 애니메이션 표시 _(v2.0 신규)_
 - **실시간 업데이트**: Supabase 실시간 구독으로 즉시 반영
-- **테마 커스터마이징**: 팀별 배경색 설정
-- **반응형 디자인**: 다양한 화면 크기에 최적화
+- **테마 커스터마이징**: 팀별 배경색, 로고, 폰트 크기 설정
 - **인증 시스템**: Supabase Auth를 통한 사용자 관리
 
 ## 🛠️ 기술 스택
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Real-time, Auth)
+- **Frontend**: React 19, TypeScript (strict), Tailwind CSS 4, Vite
+- **Backend**: Supabase (PostgreSQL, Real-time, Auth, Storage)
 - **Deployment**: Vercel
 - **Package Manager**: yarn
 
@@ -22,20 +24,64 @@
 
 ```
 src/
-├── components/          # React 컴포넌트
-│   ├── AdminPanel.tsx   # 관리자 패널
-│   ├── GameCard.tsx     # 경기 카드 컴포넌트
-│   ├── GameForm.tsx     # 경기 등록/수정 폼
-│   ├── Login.tsx        # 로그인 페이지
-│   ├── ScoreControl.tsx # 스코어 컨트롤러
-│   ├── ScoreboardA.tsx  # A타입 스코어보드
-│   └── ScoreboardB.tsx  # B타입 스코어보드
-├── services/            # Supabase 서비스
-├── types/              # TypeScript 타입 정의
-├── utils/              # 유틸리티 함수
-├── hooks/              # 커스텀 훅
-└── config.ts           # 설정 파일
+├── components/
+│   ├── AdminPanel.tsx        # 경기 목록 관리자 패널
+│   ├── GameCard.tsx          # 경기 카드 컴포넌트
+│   ├── GameForm.tsx          # 경기 등록/수정 폼 (팀 콤보박스 포함)
+│   ├── Login.tsx             # 로그인 페이지
+│   ├── PlayerManagement.tsx  # 선수 등록/관리 화면 (v2.0 신규)
+│   ├── ScoreControl.tsx      # 스코어 컨트롤러 (선수 팝업 포함)
+│   ├── ScoreboardA.tsx       # A타입 스코어보드 (세로형)
+│   └── ScoreboardB.tsx       # B타입 스코어보드 (가로형)
+├── services/
+│   ├── SupabaseGameinfoService.ts
+│   ├── SupabaseScoreService.ts
+│   ├── SupabaseTeamsService.ts    # (v2.0 신규)
+│   ├── SupabasePlayersService.ts  # (v2.0 신규)
+│   ├── SupabaseAuthorizationService.ts
+│   └── SupabaeJwtproviderService.ts
+├── types/
+│   └── scoreboard.ts         # 공통 타입 정의
+├── utils/
+│   ├── colorUtils.ts
+│   └── supabaseClient.ts
+├── hooks/
+│   ├── userAuth.ts
+│   └── userInfo.ts
+├── styles/
+│   └── playerPopup.css       # 선수 팝업 슬라이드 애니메이션 (v2.0 신규)
+└── config.ts
 ```
+
+## 🗺️ 라우트 구조
+
+| 경로 | 컴포넌트 | 설명 |
+|------|----------|------|
+| `/` | `Login` | 로그인 |
+| `/a` | `AdminPanel` | 경기 목록 관리 |
+| `/r` | `GameForm` | 새 경기 등록 |
+| `/e/:gameId` | `GameForm` | 경기 수정 |
+| `/c/:gameId` | `ScoreControl` | 실시간 스코어 컨트롤러 |
+| `/oa/:gameId` | `ScoreboardA` | A타입 스코어보드 오버레이 |
+| `/ob/:gameId` | `ScoreboardB` | B타입 스코어보드 오버레이 |
+| `/p` | `PlayerManagement` | 선수 등록/관리 _(v2.0 신규)_ |
+
+## 🗄️ 데이터베이스 스키마
+
+### v2.0 테이블 구성
+
+| 테이블 | 설명 |
+|--------|------|
+| `game_info` | 경기 메타데이터 (팀명, 색상, 로고, 폰트 크기) |
+| `scores` | 실시간 스코어 (이닝, BSO, 주루 상황) |
+| `teams` | 팀 정보 저장 (로고 URL, 배경색) _(v2.0 신규)_ |
+| `players` | 선수 정보 (등번호, 이름, 포지션, 투타, 사진) _(v2.0 신규)_ |
+
+### Supabase Storage
+
+| 버킷 | 설명 |
+|------|------|
+| `player_photo` | 선수 프로필 사진 _(v2.0 신규)_ |
 
 ## 🚀 시작하기
 
@@ -54,16 +100,16 @@ yarn install
 
 ### 3. 환경 변수 설정
 
-`.env.local` 파일을 생성하고 다음 변수들을 설정하세요:
+`.env` 파일을 생성하고 다음 변수들을 설정하세요:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_SUPABASE_AUTH_TOKEN_KEY=your_supabase_auth_token_key
+VITE_SUPABASE_URL=https://[project-ref].supabase.co
+VITE_SUPABASE_ANON_KEY=[anon-key]
+VITE_SUPABASE_AUTH_TOKEN_KEY=sb-[project-ref]-auth-token
 ```
 
-**참고**: `VITE_SUPABASE_AUTH_TOKEN_KEY`는 Supabase 프로젝트 ref에 따라 자동으로 생성되는 토큰 이름입니다. 
-예: 프로젝트 ref가 `ansxsldpfwefqomeuwsu1`라면 `sb-ansxsldpfwefqomeuwsu1-auth-token`
+> `VITE_SUPABASE_AUTH_TOKEN_KEY`는 Supabase 프로젝트 ref 기반으로 자동 생성되는 토큰 이름입니다.
+> 예: 프로젝트 ref가 `ansxsldpfwefqomeuwsu1`이면 → `sb-ansxsldpfwefqomeuwsu1-auth-token`
 
 ### 4. 개발 서버 실행
 
@@ -75,213 +121,105 @@ yarn dev
 
 ## 🔧 Supabase 설정 가이드
 
-### 1. Supabase 프로젝트 생성
+### 1. 데이터베이스 테이블 생성
 
-1. [Supabase](https://supabase.com)에 가입하고 새 프로젝트를 생성합니다.
-2. 프로젝트 이름과 데이터베이스 비밀번호를 설정합니다.
-3. 프로젝트가 생성되면 대시보드로 이동합니다.
+SQL Editor에서 `database_v2.0_release.sql` 파일 전체를 실행하세요.
 
-### 2. 데이터베이스 테이블 생성
+이 파일에는 다음이 포함됩니다:
+- `game_info` 테이블 및 v1.5 컬럼 마이그레이션 (로고 URL, 폰트 크기)
+- `scores` 테이블
+- `teams` 테이블 (v2.0 신규)
+- `players` 테이블 (v2.0 신규)
+- 모든 테이블 RLS 정책
 
-SQL Editor에서 다음 SQL을 실행하여 필요한 테이블을 생성합니다:
+### 2. 실시간 기능 활성화
+
+Supabase 대시보드 > **Database** > **Replication** 에서 `game_info`, `scores` 테이블의 실시간 기능을 활성화하세요.
+
+### 3. Storage 버킷 생성 (v2.0)
+
+1. Supabase 대시보드 > **Storage** > **New bucket**
+2. 버킷명: `player_photo`, Public: `false`
+3. **Storage** > **Policies** > `player_photo` 버킷에 다음 RLS 정책 추가:
 
 ```sql
--- 게임 정보 테이블
-CREATE TABLE game_info (
-    game_id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    home_team VARCHAR(100) NOT NULL,
-    away_team VARCHAR(100) NOT NULL,
-    field VARCHAR(100),
-    date_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_live BOOLEAN DEFAULT false,
-    home_bg_color VARCHAR(7) DEFAULT '#374151',
-    away_bg_color VARCHAR(7) DEFAULT '#f7f7f7',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 전체 공개 읽기
+CREATE POLICY "player_photo_select"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'player_photo' );
 
--- 스코어 테이블
-CREATE TABLE scores (
-    id SERIAL PRIMARY KEY,
-    game_id INTEGER REFERENCES game_info(game_id) ON DELETE CASCADE,
-    inning INTEGER DEFAULT 1,
-    is_top BOOLEAN DEFAULT true,
-    b_count INTEGER DEFAULT 0,
-    s_count INTEGER DEFAULT 0,
-    o_count INTEGER DEFAULT 0,
-    h_score INTEGER DEFAULT 0,
-    a_score INTEGER DEFAULT 0,
-    is_first BOOLEAN DEFAULT false,
-    is_second BOOLEAN DEFAULT false,
-    is_third BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 인증된 사용자만 업로드
+CREATE POLICY "player_photo_insert"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'player_photo' AND auth.role() = 'authenticated' );
 
--- RLS (Row Level Security) 설정
-ALTER TABLE game_info ENABLE ROW LEVEL SECURITY;
-ALTER TABLE scores ENABLE ROW LEVEL SECURITY;
+-- 인증된 사용자만 수정
+CREATE POLICY "player_photo_update"
+ON storage.objects FOR UPDATE
+USING ( bucket_id = 'player_photo' AND auth.role() = 'authenticated' );
 
--- 인증된 사용자만 모든 작업 가능하도록 정책 설정
-CREATE POLICY "Enable all for authenticated users" ON game_info
-    FOR ALL USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Enable all for authenticated users" ON scores
-    FOR ALL USING (auth.role() = 'authenticated');
+-- 인증된 사용자만 삭제
+CREATE POLICY "player_photo_delete"
+ON storage.objects FOR DELETE
+USING ( bucket_id = 'player_photo' AND auth.role() = 'authenticated' );
 ```
-
-### 3. 실시간 기능 활성화
-
-1. Supabase 대시보드에서 **Database** > **Replication** 메뉴로 이동
-2. **Real-time** 섹션에서 `game_info`와 `scores` 테이블의 실시간 기능을 활성화
 
 ### 4. 인증 설정
 
-1. **Authentication** > **Settings** 메뉴로 이동
-2. **Site URL**을 개발 환경에서는 `http://localhost:5173`으로 설정
-3. **Redirect URLs**에 다음을 추가:
-   - `http://localhost:5173`
-   - `http://localhost:5173/a`
-   - `http://localhost:5173/c/*`
-
-### 5. 환경 변수 설정
-
-프로젝트 설정에서 다음 정보를 복사하여 `.env.local`에 설정:
-
-```env
-VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_SUPABASE_AUTH_TOKEN_KEY=sb-your-project-ref-auth-token
-```
+**Authentication** > **Settings** 에서:
+- **Site URL**: `http://localhost:5173` (개발) / 프로덕션 URL
+- **Redirect URLs**: `http://localhost:5173/a` 추가
 
 ## 🚀 Vercel 배포 가이드
 
-### 1. Vercel 계정 설정
+### 빌드 설정
 
-1. [Vercel](https://vercel.com)에 가입하고 GitHub 계정과 연결
-2. **New Project**를 클릭하여 새 프로젝트 생성
+| 항목 | 값 |
+|------|----|
+| Framework | Vite (자동 감지) |
+| Build Command | `yarn build` |
+| Output Directory | `dist` |
+| Install Command | `yarn install` |
 
-### 2. 프로젝트 연결
+### 환경 변수
 
-1. GitHub 저장소를 선택
-2. 프레임워크는 **Vite**로 자동 감지됨
-3. **Root Directory**는 기본값 유지
+Vercel 프로젝트 설정 > **Environment Variables** 에서 `.env`와 동일하게 설정하세요.
 
-### 3. 환경 변수 설정
+### 배포 후 Supabase 설정
 
-**Environment Variables** 섹션에서 다음 변수들을 설정:
-
-```env
-VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_SUPABASE_AUTH_TOKEN_KEY=sb-your-project-ref-auth-token
-```
-
-### 4. 배포 설정
-
-- **Build Command**: `yarn build`
-- **Output Directory**: `dist`
-- **Install Command**: `yarn install`
-
-### 5. 배포 실행
-
-**Deploy** 버튼을 클릭하여 배포를 시작합니다.
-
-### 6. 도메인 설정 (선택사항)
-
-1. **Settings** > **Domains**에서 커스텀 도메인 추가
-2. DNS 설정을 Vercel에서 제공하는 값으로 변경
-
-### 7. Supabase 프로덕션 설정
-
-배포 후 Supabase 대시보드에서:
-
-1. **Authentication** > **Settings**에서 **Site URL**을 프로덕션 URL로 변경
-2. **Redirect URLs**에 프로덕션 URL 추가:
-   - `https://your-domain.vercel.app`
-   - `https://your-domain.vercel.app/a`
-   - `https://your-domain.vercel.app/c/*`
+- **Site URL** → 프로덕션 도메인으로 변경
+- **Redirect URLs** → `https://your-domain.vercel.app/a` 추가
 
 ## 📱 사용법
 
-### 1. 관리자 로그인
+### 경기 관리
 
-1. 루트 URL(`/`)에서 로그인
-2. 이메일과 비밀번호로 인증
-3. 관리자 패널(`/a`)로 자동 이동
+1. `/a` 관리자 패널에서 새 경기 등록
+2. 팀명 입력 시 저장된 팀 콤보박스에서 선택하면 로고·색상 자동 적용
+3. 테마 저장 시 팀 정보가 자동으로 teams 테이블에 저장
 
-### 2. 경기 관리
+### 선수 관리 _(v2.0 신규)_
 
-- **새 경기 등록**: "New Game" 버튼 클릭
-- **경기 수정**: 경기 카드의 "✏️ 경기 수정" 버튼
-- **경기 삭제**: 드롭다운 메뉴의 "🗑️ 삭제" 옵션
+1. 관리자 패널 우측 상단 **"👤 선수 관리"** 버튼 클릭 또는 `/p` 접속
+2. 팀 선택 후 **"+ 선수 등록"** 클릭
+3. 등번호, 이름, 주포지션, 부포지션, 투타, 사진 업로드
+4. 카드 hover 시 나타나는 ✏ / ✕ 버튼으로 수정·삭제
+5. 우측 상단 **2열 / 3열 / 4열** 버튼으로 그리드 레이아웃 전환
 
-### 3. 스코어보드 사용
+### 선수 프로필 팝업 _(v2.0 신규)_
 
-- **A타입 스코어보드**: `/o/{gameId}/a`
-- **B타입 스코어보드**: `/o/{gameId}/b`
-- **컨트롤러**: `/c/{gameId}`
+컨트롤러(`/c/:gameId`) 하단 **"👤 선수 프로필 팝업"** 섹션:
+1. 어웨이/홈 팀 토글 선택
+2. 선수 선택
+3. 표시 위치 선택 (왼쪽 / 오른쪽)
+4. **확인** 버튼 → 스코어보드에 3초간 슬라이드 팝업 표시
 
-### 4. 실시간 업데이트
+### 스코어보드 오버레이
 
-- 스코어보드는 실시간으로 업데이트됩니다
-- 컨트롤러에서 변경사항이 즉시 반영됩니다
-
-## 🔧 개발 가이드
-
-### 새로운 컴포넌트 추가
-
-```bash
-# 컴포넌트 생성
-touch src/components/NewComponent.tsx
-
-# 타입 정의 추가
-# src/types/에 관련 타입 정의
-```
-
-### 스타일링
-
-- Tailwind CSS 사용
-- 컴포넌트별 스타일링
-- 반응형 디자인 고려
-
-### 상태 관리
-
-- React hooks 사용
-- Supabase 실시간 구독
-- 로컬 상태와 서버 상태 분리
-
-## 🐛 문제 해결
-
-### 일반적인 문제
-
-1. **인증 오류**: Supabase 설정 확인
-2. **실시간 업데이트 안됨**: RLS 정책 및 실시간 설정 확인
-3. **배포 실패**: 환경 변수 설정 확인
-
-### 로그 확인
-
-```bash
-# 개발 서버 로그
-yarn dev
-
-# 빌드 로그
-yarn build
-```
+- **A타입** (세로형, 330×180px): `/oa/{gameId}`
+- **B타입** (가로형, 1210×47px): `/ob/{gameId}`
+- OBS 등 방송 소프트웨어에서 브라우저 소스로 추가
 
 ## 📄 라이선스
 
 © 2025 Sco-B System. All rights reserved.
-
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 지원
-
-문제가 발생하거나 질문이 있으시면 이슈를 생성해주세요.

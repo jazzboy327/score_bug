@@ -56,6 +56,7 @@ export default function ScoreboardA() {
   const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
   const [overlayScale, setOverlayScale] = useState(1.0)
   const [playerPopup, setPlayerPopup] = useState<PlayerPopupPayload | null>(null)
+  const [imgOrientation, setImgOrientation] = useState<'portrait' | 'landscape'>('portrait')
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function ScoreboardA() {
       })
       .on('broadcast', { event: 'PLAYER_POPUP' }, ({ payload }) => {
         if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
+        setImgOrientation('portrait')
         setPlayerPopup(payload as PlayerPopupPayload)
         popupTimerRef.current = setTimeout(() => setPlayerPopup(null), 3000)
       })
@@ -204,26 +206,39 @@ export default function ScoreboardA() {
       </div>
 
       {/* 선수 프로필 팝업 - Media Card */}
-      {playerPopup && (
+      {playerPopup && (() => {
+        const isLandscape = imgOrientation === 'landscape'
+        const cardWidth = isLandscape ? 250 : 150
+        const imgW = isLandscape ? 250 : 150
+        const imgH = isLandscape ? 180 : 230
+        const animSuffix = isLandscape ? 'Landscape' : ''
+        const animName = playerPopup.position === 'left-middle'
+          ? `playerPopupFromLeft${animSuffix}`
+          : `playerPopupFromRight${animSuffix}`
+        return (
         <div style={{
           position: 'fixed',
           top: '50%',
           ...(playerPopup.position === 'left-middle' ? { left: '20px' } : { right: '20px' }),
-          width: '150px',
+          width: `${cardWidth}px`,
           borderRadius: '10px',
           overflow: 'hidden',
           zIndex: 200,
           boxShadow: '0 6px 28px rgba(0,0,0,0.65)',
           border: '1px solid rgba(255,255,255,0.12)',
-          animation: `${playerPopup.position === 'left-middle' ? 'playerPopupFromLeft' : 'playerPopupFromRight'} 3s ease forwards`,
+          animation: `${animName} 3s ease forwards`,
         }}>
           {/* 상단 - 이미지 */}
-          <div style={{ width: '150px', height: '230px', backgroundColor: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: `${imgW}px`, height: `${imgH}px`, backgroundColor: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {playerPopup.player.photo_url ? (
               <img
                 src={playerPopup.player.photo_url}
                 alt={playerPopup.player.name}
-                style={{ width: '150px', height: '230px', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                style={{ width: `${imgW}px`, height: `${imgH}px`, objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                onLoad={e => {
+                  const img = e.currentTarget
+                  if (img.naturalWidth > img.naturalHeight) setImgOrientation('landscape')
+                }}
                 onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
               />
             ) : (
@@ -250,7 +265,8 @@ export default function ScoreboardA() {
             </div>
           </div>
         </div>
-      )}
+        )
+      })()}
     </div>
   );
 }
