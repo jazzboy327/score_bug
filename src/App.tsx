@@ -10,6 +10,7 @@ import ScoreboardBV1 from "./components/ScoreboardB_v1"
 
 import ScoreboardA from "./components/ScoreboardA"
 import ScoreboardB from "./components/ScoreboardB"
+import PlayerManagement from "./components/PlayerManagement"
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path={Appconfig.scoreboardB_v1_template_url} element={<ScoreboardBV1 />} />
         <Route path={Appconfig.scoreboardA_template_url} element={<ScoreboardA />} />
         <Route path={Appconfig.scoreboardB_template_url} element={<ScoreboardB />} />
+        <Route path={Appconfig.player_management_url} element={<PlayerManagement />} />
       </Routes>
     </BrowserRouter>
   )

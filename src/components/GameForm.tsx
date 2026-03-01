@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import { SupabaseScoreService } from '../services/SupabaseScoreService'
-import type { GameInfoRow } from '../types/scoreboard'
+import { SupabaseTeamsService } from '../services/SupabaseTeamsService'
+import type { GameInfoRow, TeamRow } from '../types/scoreboard'
 import { Appconfig } from "../config"
 
 const gameInfoService = new SupabaseGameinfoService()
 const scoreService = new SupabaseScoreService()
+const teamsService = new SupabaseTeamsService()
 
 interface GameFormProps {
     mode?: 'create' | 'edit'
@@ -21,22 +23,22 @@ interface TimePickerProps {
 
 function TimePicker({ value, onChange, className = '' }: TimePickerProps) {
     const [selectedHour, selectedMinute] = value ? value.split(':').map(Number) : [0, 0]
-    
+
     const hours = Array.from({ length: 24 }, (_, i) => i)
     const minutes = Array.from({ length: 6 }, (_, i) => i * 10) // 10분 단위
-    
+
     const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const hour = parseInt(e.target.value)
         const timeString = `${hour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`
         onChange(timeString)
     }
-    
+
     const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const minute = parseInt(e.target.value)
         const timeString = `${selectedHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
         onChange(timeString)
     }
-    
+
     return (
         <div className="flex gap-2">
             <select
@@ -50,7 +52,7 @@ function TimePicker({ value, onChange, className = '' }: TimePickerProps) {
                     </option>
                 ))}
             </select>
-            
+
             <select
                 value={selectedMinute}
                 onChange={handleMinuteChange}
@@ -80,13 +82,34 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
+    // 팀 목록 및 선택 모드
+    const [teams, setTeams] = useState<TeamRow[]>([])
+    const [awayMode, setAwayMode] = useState<'select' | 'manual'>('select')
+    const [homeMode, setHomeMode] = useState<'select' | 'manual'>('select')
+
+    // 선택된 팀의 색상/로고 (숨겨진 상태)
+    const [awayTeamMeta, setAwayTeamMeta] = useState({ logo_url: '', bg_color: '' })
+    const [homeTeamMeta, setHomeTeamMeta] = useState({ logo_url: '', bg_color: '' })
+
     // 수정 모드일 때 기존 데이터 로드
     useEffect(() => {
         if (mode === 'edit' && gameId) {
             loadGameData()
         }
     }, [mode, gameId])
-    
+
+    useEffect(() => {
+        loadTeams()
+    }, [])
+
+    const loadTeams = async () => {
+        try {
+            const data = await teamsService.getAllTeams()
+            setTeams(data)
+        } catch (err) {
+            console.error('Failed to load teams:', err)
+        }
+    }
 
     const loadGameData = async () => {
         try {
@@ -96,7 +119,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                 const gameDate = new Date(gameData.date_time)
                 const dateStr = gameDate.toISOString().split('T')[0]
                 const timeStr = gameDate.toTimeString().slice(0, 5)
-                
+
                 setFormData({
                     title: gameData.title || '',
                     a_team: gameData.away_team || '',
@@ -105,6 +128,9 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     game_time: timeStr,
                     field: gameData.field || '',
                 })
+                // 수정 모드에서는 수기 입력 모드로
+                setAwayMode('manual')
+                setHomeMode('manual')
             }
         } catch (err) {
             console.error('Failed to load game data:', err)
@@ -127,6 +153,34 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
         }))
     }
 
+    const handleAwayTeamSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedName = e.target.value
+        setFormData(prev => ({ ...prev, a_team: selectedName }))
+        const found = teams.find(t => t.name === selectedName)
+        if (found) {
+            setAwayTeamMeta({
+                logo_url: found.logo_url || '',
+                bg_color: found.bg_color || ''
+            })
+        } else {
+            setAwayTeamMeta({ logo_url: '', bg_color: '' })
+        }
+    }
+
+    const handleHomeTeamSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedName = e.target.value
+        setFormData(prev => ({ ...prev, h_team: selectedName }))
+        const found = teams.find(t => t.name === selectedName)
+        if (found) {
+            setHomeTeamMeta({
+                logo_url: found.logo_url || '',
+                bg_color: found.bg_color || ''
+            })
+        } else {
+            setHomeTeamMeta({ logo_url: '', bg_color: '' })
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
@@ -135,7 +189,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
         try {
             // 날짜와 시간을 결합
             const gameDateTime = `${formData.game_date}T${formData.game_time}:00`
-            
+
             if (mode === 'create') {
                 // 새 게임 생성
                 const newGame = await gameInfoService.createGameInfo({
@@ -146,8 +200,10 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     date_time: gameDateTime,
                     field: formData.field,
                     is_live: true,
-                    home_bg_color: '#374151',
-                    away_bg_color: '#f7f7f7',
+                    home_bg_color: homeTeamMeta.bg_color || '#374151',
+                    away_bg_color: awayTeamMeta.bg_color || '#f7f7f7',
+                    home_team_logo_url: homeTeamMeta.logo_url || undefined,
+                    away_team_logo_url: awayTeamMeta.logo_url || undefined,
                     title_font_size: 23,
                     team_name_font_size: 25
                 })
@@ -193,6 +249,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
     }
 
     const isEditMode = mode === 'edit'
+    const inputClass = "w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
 
     return (
         <div className="min-h-screen bg-[#222] flex items-center justify-center p-4">
@@ -221,43 +278,97 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                                 value={formData.title}
                                 onChange={handleInputChange}
                                 required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
+                                className={inputClass}
                                 placeholder="대회명을 입력하세요"
                             />
                         </div>
 
                         {/* 초공격 팀명 */}
                         <div>
-                            <label htmlFor="a_team" className="block text-white text-sm font-medium mb-2">
-                                초공격 팀명 *
-                            </label>
-                            <input
-                                type="text"
-                                id="a_team"
-                                name="a_team"
-                                value={formData.a_team}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
-                                placeholder="초공격 팀명을 입력하세요"
-                            />
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-white text-sm font-medium">
+                                    초공격 팀명 *
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAwayMode(m => m === 'select' ? 'manual' : 'select')
+                                        setFormData(prev => ({ ...prev, a_team: '' }))
+                                        setAwayTeamMeta({ logo_url: '', bg_color: '' })
+                                    }}
+                                    className="text-xs text-[#00c853] hover:text-[#00a844] transition-colors"
+                                >
+                                    {awayMode === 'select' ? '✏️ 직접 입력' : '📋 목록에서 선택'}
+                                </button>
+                            </div>
+                            {awayMode === 'select' ? (
+                                <select
+                                    value={formData.a_team}
+                                    onChange={handleAwayTeamSelect}
+                                    required
+                                    className={inputClass}
+                                >
+                                    <option value="">팀을 선택하세요</option>
+                                    {teams.map(team => (
+                                        <option key={team.id} value={team.name}>{team.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    type="text"
+                                    id="a_team"
+                                    name="a_team"
+                                    value={formData.a_team}
+                                    onChange={handleInputChange}
+                                    required
+                                    className={inputClass}
+                                    placeholder="초공격 팀명을 입력하세요"
+                                />
+                            )}
                         </div>
 
                         {/* 말공격 팀명 */}
                         <div>
-                            <label htmlFor="h_team" className="block text-white text-sm font-medium mb-2">
-                                말공격 팀명 *
-                            </label>
-                            <input
-                                type="text"
-                                id="h_team"
-                                name="h_team"
-                                value={formData.h_team}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
-                                placeholder="말공격 팀명을 입력하세요"
-                            />
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-white text-sm font-medium">
+                                    말공격 팀명 *
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setHomeMode(m => m === 'select' ? 'manual' : 'select')
+                                        setFormData(prev => ({ ...prev, h_team: '' }))
+                                        setHomeTeamMeta({ logo_url: '', bg_color: '' })
+                                    }}
+                                    className="text-xs text-[#00c853] hover:text-[#00a844] transition-colors"
+                                >
+                                    {homeMode === 'select' ? '✏️ 직접 입력' : '📋 목록에서 선택'}
+                                </button>
+                            </div>
+                            {homeMode === 'select' ? (
+                                <select
+                                    value={formData.h_team}
+                                    onChange={handleHomeTeamSelect}
+                                    required
+                                    className={inputClass}
+                                >
+                                    <option value="">팀을 선택하세요</option>
+                                    {teams.map(team => (
+                                        <option key={team.id} value={team.name}>{team.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    type="text"
+                                    id="h_team"
+                                    name="h_team"
+                                    value={formData.h_team}
+                                    onChange={handleInputChange}
+                                    required
+                                    className={inputClass}
+                                    placeholder="말공격 팀명을 입력하세요"
+                                />
+                            )}
                         </div>
 
                         {/* 경기 날짜 */}
@@ -272,7 +383,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                                 value={formData.game_date}
                                 onChange={handleInputChange}
                                 required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
+                                className={inputClass}
                             />
                         </div>
 
@@ -296,7 +407,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                                 value={formData.field}
                                 onChange={handleInputChange}
                                 required
-                                className="w-full px-4 py-3 bg-[#444] text-white rounded-lg border border-[#555] focus:outline-none focus:border-[#00c853] transition-colors"
+                                className={inputClass}
                                 placeholder="경기장을 입력하세요"
                             />
                         </div>
@@ -308,12 +419,12 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                                 disabled={isLoading}
                                 className="w-full bg-[#00c853] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#00a844] disabled:bg-[#666] disabled:cursor-not-allowed transition-colors"
                             >
-                                {isLoading 
-                                    ? (isEditMode ? '수정 중...' : '등록 중...') 
+                                {isLoading
+                                    ? (isEditMode ? '수정 중...' : '등록 중...')
                                     : (isEditMode ? '경기 수정' : '경기 등록')
                                 }
                             </button>
-                            
+
                             <button
                                 type="button"
                                 onClick={() => navigate(Appconfig.admin_panel_url)}
@@ -327,4 +438,4 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
             </div>
         </div>
     )
-} 
+}

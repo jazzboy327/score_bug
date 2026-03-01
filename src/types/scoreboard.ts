@@ -60,6 +60,28 @@ export interface ScoreService {
   createScore(gameId: number): Promise<ScoreRow | null>;
 }
 
+export interface TeamRow {
+  id: number;
+  name: string;
+  logo_url?: string;
+  bg_color?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PlayerRow {
+  id: number;
+  team_id: number;
+  number?: number;
+  name: string;
+  position?: string;
+  sub_position?: string;
+  hand_type?: string;
+  photo_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type OverlayPosition =
   | 'top-left'
   | 'top-center'
@@ -71,4 +93,11 @@ export type OverlayPosition =
 export interface OverlayControlPayload {
   position: OverlayPosition;
   scale: number;
+}
+
+export type PlayerPopupPosition = 'left-middle' | 'right-middle'
+
+export interface PlayerPopupPayload {
+  player: PlayerRow;
+  position: PlayerPopupPosition;
 }

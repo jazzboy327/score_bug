@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
-import type { ScoreRow, OverlayPosition } from "../types/scoreboard"
+import type { ScoreRow, OverlayPosition, PlayerRow, PlayerPopupPosition, PlayerPopupPayload } from "../types/scoreboard"
 import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
 import { SupabaseScoreService } from "../services/SupabaseScoreService"
+import { SupabaseTeamsService } from "../services/SupabaseTeamsService"
+import { SupabasePlayersService } from "../services/SupabasePlayersService"
 import { supabase } from "../utils/supabaseClient"
 
 const gameInfoService = new SupabaseGameinfoService();
 const scoreService = new SupabaseScoreService();
+const teamsService = new SupabaseTeamsService();
+const playersService = new SupabasePlayersService();
  
 
 export default function ScoreControl() {
@@ -18,6 +22,14 @@ export default function ScoreControl() {
     const [overlayScale, setOverlayScale] = useState(1.0)
     const [positionOpen, setPositionOpen] = useState(false)
     const overlayChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
+    // 선수 팝업
+    const [playerPopupOpen, setPlayerPopupOpen] = useState(false)
+    const [popupTeamSide, setPopupTeamSide] = useState<'away' | 'home'>('away')
+    const [popupPlayers, setPopupPlayers] = useState<PlayerRow[]>([])
+    const [popupPlayerId, setPopupPlayerId] = useState<number | ''>('')
+    const [popupPosition, setPopupPosition] = useState<PlayerPopupPosition>('left-middle')
+    const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
     // 이닝 조작
     const handleInningChange = async (increment: boolean) => {
@@ -163,6 +175,34 @@ export default function ScoreControl() {
             console.error('Failed to reset bases:', error);
         }
     };
+
+    // 팀 목록 로드
+    useEffect(() => {
+        teamsService.getAllTeams().then(setAllTeams).catch(console.error)
+    }, [])
+
+    // 팀 사이드 변경 시 선수 목록 로드
+    useEffect(() => {
+        if (!gameInfo || allTeams.length === 0) return
+        const teamName = popupTeamSide === 'away' ? gameInfo.away_team : gameInfo.home_team
+        const team = allTeams.find(t => t.name === teamName)
+        if (!team) { setPopupPlayers([]); return }
+        playersService.getAllPlayersByTeam(team.id).then(players => {
+            setPopupPlayers(players)
+            setPopupPlayerId('')
+        }).catch(console.error)
+    }, [popupTeamSide, gameInfo, allTeams])
+
+    const broadcastPlayerPopup = () => {
+        if (!overlayChannelRef.current || popupPlayerId === '') return
+        const player = popupPlayers.find(p => p.id === popupPlayerId)
+        if (!player) return
+        overlayChannelRef.current.send({
+            type: 'broadcast',
+            event: 'PLAYER_POPUP',
+            payload: { player, position: popupPosition } as PlayerPopupPayload,
+        })
+    }
 
     const broadcastOverlayUpdate = (position: OverlayPosition, scale: number) => {
         if (!overlayChannelRef.current) return
@@ -355,6 +395,75 @@ export default function ScoreControl() {
                       <button onClick={() => handleScoreChange('h_score', true)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">+</button>
                   </div>
               </div>
+          </div>
+
+          {/* 선수 프로필 팝업 */}
+          <div className="w-full px-4 pb-4">
+              <button
+                  onClick={() => setPlayerPopupOpen(prev => !prev)}
+                  className="flex items-center justify-between w-full py-3 px-4 bg-[#333] rounded-2xl active:opacity-80"
+              >
+                  <span className="text-white text-base font-bold">👤 선수 프로필 팝업</span>
+                  <span className="text-gray-400">{playerPopupOpen ? '▲' : '▼'}</span>
+              </button>
+              {playerPopupOpen && (
+                  <div className="mt-3 flex flex-col gap-3">
+                      {/* 팀 선택 */}
+                      <div className="flex gap-2">
+                          <button
+                              onClick={() => setPopupTeamSide('away')}
+                              className={`flex-1 h-10 rounded-xl text-sm font-bold transition-colors ${popupTeamSide === 'away' ? 'bg-[#f97316] text-white' : 'bg-[#444] text-gray-300'}`}
+                          >
+                              {gameInfo?.away_team ?? '초공'}
+                          </button>
+                          <button
+                              onClick={() => setPopupTeamSide('home')}
+                              className={`flex-1 h-10 rounded-xl text-sm font-bold transition-colors ${popupTeamSide === 'home' ? 'bg-[#60a5fa] text-white' : 'bg-[#444] text-gray-300'}`}
+                          >
+                              {gameInfo?.home_team ?? '말공'}
+                          </button>
+                      </div>
+
+                      {/* 선수 선택 */}
+                      <select
+                          value={popupPlayerId}
+                          onChange={e => setPopupPlayerId(e.target.value ? Number(e.target.value) : '')}
+                          className="w-full px-3 py-2 bg-[#444] text-white rounded-xl border border-[#555] focus:outline-none"
+                      >
+                          <option value="">선수 선택</option>
+                          {popupPlayers.map(p => (
+                              <option key={p.id} value={p.id}>
+                                  {p.number != null ? `#${p.number} ` : ''}{p.name}{p.position ? ` (${p.position})` : ''}
+                              </option>
+                          ))}
+                      </select>
+
+                      {/* 위치 선택 */}
+                      <div className="flex gap-2">
+                          <button
+                              onClick={() => setPopupPosition('left-middle')}
+                              className={`flex-1 h-10 rounded-xl text-sm font-bold transition-colors ${popupPosition === 'left-middle' ? 'bg-[#00c853] text-white' : 'bg-[#444] text-gray-300'}`}
+                          >
+                              ◀ 좌측
+                          </button>
+                          <button
+                              onClick={() => setPopupPosition('right-middle')}
+                              className={`flex-1 h-10 rounded-xl text-sm font-bold transition-colors ${popupPosition === 'right-middle' ? 'bg-[#00c853] text-white' : 'bg-[#444] text-gray-300'}`}
+                          >
+                              우측 ▶
+                          </button>
+                      </div>
+
+                      {/* 확인 버튼 */}
+                      <button
+                          onClick={broadcastPlayerPopup}
+                          disabled={popupPlayerId === ''}
+                          className="w-full h-12 bg-[#6366f1] hover:bg-[#4f46e5] disabled:bg-[#555] disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
+                      >
+                          확인 (3초 표시)
+                      </button>
+                  </div>
+              )}
           </div>
 
           {/* 오버레이 위치 (접기/펼치기) */}

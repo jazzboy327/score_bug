@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom"
-import type { ScoreRow, GameInfoRow, OverlayPosition } from "../types/scoreboard"
+import type { ScoreRow, GameInfoRow, OverlayPosition, PlayerPopupPayload } from "../types/scoreboard"
 import { SupabaseGameinfoService } from "../services/SupabaseGameinfoService"
 import { SupabaseScoreService } from "../services/SupabaseScoreService"
 import { getContrastYIQ } from "../utils/colorUtils"
 import { supabase } from "../utils/supabaseClient"
+import '../styles/playerPopup.css'
 
 const gameInfoService = new SupabaseGameinfoService();
 const scoreService = new SupabaseScoreService();
@@ -54,6 +55,8 @@ export default function ScoreboardA() {
   const [gameInfo, setGameInfo] = useState<GameInfoRow | null>(null)
   const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
   const [overlayScale, setOverlayScale] = useState(1.0)
+  const [playerPopup, setPlayerPopup] = useState<PlayerPopupPayload | null>(null)
+  const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const fetchScore = async () => {
@@ -78,6 +81,11 @@ export default function ScoreboardA() {
         if (payload.position) setOverlayPosition(payload.position as OverlayPosition)
         if (payload.scale !== undefined) setOverlayScale(payload.scale as number)
       })
+      .on('broadcast', { event: 'PLAYER_POPUP' }, ({ payload }) => {
+        if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
+        setPlayerPopup(payload as PlayerPopupPayload)
+        popupTimerRef.current = setTimeout(() => setPlayerPopup(null), 3000)
+      })
       .subscribe()
 
     fetchScore()
@@ -87,6 +95,7 @@ export default function ScoreboardA() {
       unsubscribeScore()
       unsubscribeGameInfo()
       supabase.removeChannel(overlayChannel)
+      if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
     }
   }, [gameId])
 
@@ -105,7 +114,8 @@ export default function ScoreboardA() {
   const gameTitle = gameInfo?.title ?? "TITLE"
   const homeLogoUrl = gameInfo?.home_team_logo_url
   const awayLogoUrl = gameInfo?.away_team_logo_url
-  const titleFontSize = gameInfo?.title_font_size ?? 30
+  // B 타입(400px) 기준 폰트 크기를 A 타입(350px) 비율로 환산 (350/400 = 0.875)
+  const titleFontSize = Math.round((gameInfo?.title_font_size ?? 30) * (350 / 400))
   const teamNameFontSize = gameInfo?.team_name_font_size ?? 36
   const hBgColor = gameInfo?.home_bg_color ?? "#374151"
   const aBgColor = gameInfo?.away_bg_color ?? "#f7f7f7"
@@ -192,6 +202,55 @@ export default function ScoreboardA() {
           </div>
         </div>
       </div>
+
+      {/* 선수 프로필 팝업 - Media Card */}
+      {playerPopup && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          ...(playerPopup.position === 'left-middle' ? { left: '20px' } : { right: '20px' }),
+          width: '150px',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          zIndex: 200,
+          boxShadow: '0 6px 28px rgba(0,0,0,0.65)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          animation: `${playerPopup.position === 'left-middle' ? 'playerPopupFromLeft' : 'playerPopupFromRight'} 3s ease forwards`,
+        }}>
+          {/* 상단 - 이미지 */}
+          <div style={{ width: '150px', height: '230px', backgroundColor: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {playerPopup.player.photo_url ? (
+              <img
+                src={playerPopup.player.photo_url}
+                alt={playerPopup.player.name}
+                style={{ width: '150px', height: '230px', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+              />
+            ) : (
+              <span style={{ fontSize: '52px' }}>👤</span>
+            )}
+          </div>
+          {/* 하단 10% - 메타정보 */}
+          <div style={{
+            backgroundColor: 'rgba(10,10,10,0.92)',
+            padding: '7px 10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              {playerPopup.player.number != null && (
+                <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '13px' }}>#{playerPopup.player.number}</span>
+              )}
+              <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '14px', lineHeight: '1.2' }}>{playerPopup.player.name}</span>
+            </div>
+            <div style={{ color: '#9ca3af', fontSize: '10px', lineHeight: '1.3' }}>
+              {[playerPopup.player.position, playerPopup.player.sub_position].filter(Boolean).join(' · ')}
+              {playerPopup.player.hand_type && ` · ${playerPopup.player.hand_type}`}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

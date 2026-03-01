@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
+import { SupabaseTeamsService } from '../services/SupabaseTeamsService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { Appconfig } from "../config"
 import { userAuth } from '../hooks/userAuth'
@@ -9,6 +10,7 @@ import { getContrastYIQ } from '../utils/colorUtils'
 
 // services
 const gameInfoService = new SupabaseGameinfoService()
+const teamsService = new SupabaseTeamsService()
 // default export
 export default function AdminPanel() {
     const navigate = useNavigate()
@@ -139,6 +141,20 @@ export default function AdminPanel() {
             
             const result = await gameInfoService.updateGameInfo(updatedGame)
             if (result.success) {
+                // teams 테이블에 upsert (non-blocking)
+                Promise.all([
+                    teamsService.upsertTeam({
+                        name: selectedGame.home_team,
+                        logo_url: logoUrls.home_team_logo_url || undefined,
+                        bg_color: themeColors.home_bg_color
+                    }),
+                    teamsService.upsertTeam({
+                        name: selectedGame.away_team,
+                        logo_url: logoUrls.away_team_logo_url || undefined,
+                        bg_color: themeColors.away_bg_color
+                    })
+                ]).catch(err => console.error('Failed to upsert teams:', err))
+
                 alert('설정이 성공적으로 변경되었습니다.')
                 setShowThemeModal(false)
                 loadGames() // 목록 새로고침
@@ -185,6 +201,12 @@ export default function AdminPanel() {
                         <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
                     </div>
                     <div className="flex gap-3 items-center">
+                        <button
+                            onClick={() => navigate(Appconfig.player_management_url)}
+                            className="w-30 h-10 bg-indigo-600 hover:bg-indigo-700 text-sm text-white rounded-lg transition-all duration-200 shadow-lg font-bold"
+                        >
+                            👤 선수 관리
+                        </button>
                         <button
                             onClick={handleCreateGame}
                             className={`w-30 h-10 bg-gradient-to-r ${theme.buttonPrimary} text-sm text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-bold`}
