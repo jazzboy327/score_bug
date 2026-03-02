@@ -380,7 +380,7 @@ export default function ScoreControl() {
           {/* 행2: 초공A / 말공B 점수 */}
           <div className="flex flex-row gap-3 px-4 mb-6">
               <div className="flex flex-col items-center flex-1">
-                  <div className="text-gray-400 text-xs mb-1.5">초공(A) 점수</div>
+                  <div className="text-gray-400 text-xs mb-1.5">{gameInfo?.away_team ?? '초공격'}(초)</div>
                   <div className="flex items-center gap-2 w-full">
                       <button onClick={() => handleScoreChange('a_score', false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
                       <div className="text-white text-2xl font-bold w-8 text-center">{a_score}</div>
@@ -388,7 +388,7 @@ export default function ScoreControl() {
                   </div>
               </div>
               <div className="flex flex-col items-center flex-1">
-                  <div className="text-gray-400 text-xs mb-1.5">말공(B) 점수</div>
+                  <div className="text-gray-400 text-xs mb-1.5">{gameInfo?.home_team ?? '말공격'}(말)</div>
                   <div className="flex items-center gap-2 w-full">
                       <button onClick={() => handleScoreChange('h_score', false)} className="flex-1 h-14 bg-[#444] text-white text-2xl font-bold rounded-2xl active:opacity-80">−</button>
                       <div className="text-white text-2xl font-bold w-8 text-center">{h_score}</div>

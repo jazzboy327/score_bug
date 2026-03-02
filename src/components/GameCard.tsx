@@ -13,7 +13,7 @@ const MoreVerticalIcon = () => (
 
 
 // 드롭다운 메뉴 컴포넌트
-const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, closeMenu }: { game: GameInfoWithScore, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, closeMenu: () => void }) => {
+const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, onSwapTeams, closeMenu }: { game: GameInfoWithScore, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onSwapTeams: (game: GameInfoWithScore) => void, closeMenu: () => void }) => {
     const handleEdit = () => {
         onEdit(game.game_id);
         closeMenu();
@@ -29,6 +29,11 @@ const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, closeMenu }: { game: 
         closeMenu();
     };
 
+    const handleSwapTeams = () => {
+        onSwapTeams(game);
+        closeMenu();
+    };
+
     const handleDelete = () => {
         onDelete(game.game_id);
         closeMenu();
@@ -38,6 +43,7 @@ const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, closeMenu }: { game: 
         <div className="absolute top-12 right-0 bg-gray-700 rounded-lg shadow-xl w-48 z-10 border border-gray-600">
             <ul className="text-sm text-gray-200">
                 <li onClick={handleEdit} className="p-3 hover:bg-gray-600 rounded-t-lg cursor-pointer flex items-center">✏️ <span className="ml-2">경기 수정</span></li>
+                <li onClick={handleSwapTeams} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔄 <span className="ml-2">홈/원정 전환</span></li>
                 <li onClick={handleCopyUrlA} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">A(700x345)URL 복사</span></li>
                 <li onClick={handleCopyUrlB} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">B(1200x60)URL 복사</span></li>
                 <li onClick={handleDelete} className="p-3 text-red-400 hover:bg-red-900/50 rounded-b-lg cursor-pointer flex items-center">🗑️ <span className="ml-2">삭제</span></li>
@@ -96,7 +102,7 @@ interface ThemeType {
 }
 
 // 메인 카드 컴포넌트
-export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange }: { game: GameInfoWithScore, theme?: ThemeType, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void }) => {
+export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange, onSwapTeams }: { game: GameInfoWithScore, theme?: ThemeType, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void, onSwapTeams: (game: GameInfoWithScore) => void }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -149,11 +155,12 @@ export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit,
                         <MoreVerticalIcon />
                     </button>
                     {isMenuOpen && (
-                         <DropdownMenu 
-                            game={game} 
-                            onEdit={onEdit} 
-                            onDelete={onDelete} 
+                         <DropdownMenu
+                            game={game}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
                             onCopyUrl={onCopyUrl}
+                            onSwapTeams={onSwapTeams}
                             closeMenu={() => {
                                 setIsMenuOpen(false);
                             }}

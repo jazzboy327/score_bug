@@ -108,6 +108,30 @@ export default function AdminPanel() {
         window.open(controllerUrl, '_blank', 'width=1200,height=800')
     }
 
+    const handleSwapTeams = async (game: GameInfoWithScore) => {
+        if (!window.confirm(`홈(${game.home_team})과 원정(${game.away_team})을 서로 바꾸시겠습니까?`)) return
+        try {
+            const swapped = {
+                ...game,
+                home_team: game.away_team,
+                away_team: game.home_team,
+                home_bg_color: game.away_bg_color,
+                away_bg_color: game.home_bg_color,
+                home_team_logo_url: game.away_team_logo_url,
+                away_team_logo_url: game.home_team_logo_url,
+            }
+            const result = await gameInfoService.updateGameInfo(swapped)
+            if (result.success) {
+                loadGames()
+            } else {
+                alert('팀 전환에 실패했습니다: ' + result.error)
+            }
+        } catch (err) {
+            console.error('Failed to swap teams:', err)
+            alert('팀 전환에 실패했습니다.')
+        }
+    }
+
     const handleThemeChange = (game: GameInfoWithScore) => {
         setSelectedGame(game)
         setThemeColors({
@@ -245,6 +269,7 @@ export default function AdminPanel() {
                                     onDelete={handleDeleteGame}
                                     onCopyUrl={handleCopyUrl}
                                     onThemeChange={handleThemeChange}
+                                    onSwapTeams={handleSwapTeams}
                                 />
                             ))}
                         </div>
