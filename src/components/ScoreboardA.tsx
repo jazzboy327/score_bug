@@ -133,7 +133,7 @@ export default function ScoreboardA() {
           height: '180px',
           transform: `scale(${overlayScale})`,
           transformOrigin: getTransformOrigin(overlayPosition),
-          fontFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          fontFamily: "'Noto Sans KR', 'Pretendard Variable', Pretendard, sans-serif",
           boxSizing: 'border-box',
         }}>
           {/* SCOREBOARD 콘텐츠 */}

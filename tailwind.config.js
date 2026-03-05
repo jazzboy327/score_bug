@@ -4,11 +4,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['"Pretendard Variable"', 'sans-serif'],
-        'serif': ['"Pretendard Variable"', 'serif'],
-        'mono': ['"Pretendard Variable"', 'monospace'],
-        'display': ['"Pretendard Variable"', 'display'],
-        'body': ['"Pretendard Variable"', 'body'],
+        'sans': ['"Noto Sans KR"', '"Pretendard Variable"', 'sans-serif'],
+        'serif': ['"Noto Sans KR"', '"Pretendard Variable"', 'serif'],
+        'mono': ['"Noto Sans KR"', '"Pretendard Variable"', 'monospace'],
+        'display': ['"Noto Sans KR"', '"Pretendard Variable"', 'display'],
+        'body': ['"Noto Sans KR"', '"Pretendard Variable"', 'body'],
       },
     },
   },
