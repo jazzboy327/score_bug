@@ -131,7 +131,7 @@ export default function ScoreboardB() {
           height: '47px',
           transform: `scale(${overlayScale})`,
           transformOrigin: getTransformOrigin(overlayPosition),
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          fontFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           boxSizing: 'border-box',
         }}>
           {/* SCOREBOARD 콘텐츠 */}
@@ -209,9 +209,9 @@ export default function ScoreboardB() {
       {/* 선수 프로필 팝업 - Media Card */}
       {playerPopup && (() => {
         const isLandscape = imgOrientation === 'landscape'
-        const cardWidth = isLandscape ? 250 : 150
-        const imgW = isLandscape ? 250 : 150
-        const imgH = isLandscape ? 180 : 230
+        const cardWidth = isLandscape ? 375 : 225
+        const imgW = isLandscape ? 375 : 225
+        const imgH = isLandscape ? 270 : 345
         const animSuffix = isLandscape ? 'Landscape' : ''
         const animName = playerPopup.position === 'left-middle'
           ? `playerPopupFromLeft${animSuffix}`
@@ -249,18 +249,18 @@ export default function ScoreboardB() {
           {/* 하단 10% - 메타정보 */}
           <div style={{
             backgroundColor: 'rgba(10,10,10,0.92)',
-            padding: '7px 10px',
+            padding: '11px 15px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1px',
+            gap: '2px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '7px' }}>
               {playerPopup.player.number != null && (
-                <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '13px' }}>#{playerPopup.player.number}</span>
+                <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '20px' }}>#{playerPopup.player.number}</span>
               )}
-              <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '14px', lineHeight: '1.2' }}>{playerPopup.player.name}</span>
+              <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '21px', lineHeight: '1.2' }}>{playerPopup.player.name}</span>
             </div>
-            <div style={{ color: '#9ca3af', fontSize: '10px', lineHeight: '1.3' }}>
+            <div style={{ color: '#e5e7eb', fontSize: '15px', lineHeight: '1.3' }}>
               {[playerPopup.player.position, playerPopup.player.sub_position].filter(Boolean).join(' · ')}
               {playerPopup.player.hand_type && ` · ${playerPopup.player.hand_type}`}
             </div>
