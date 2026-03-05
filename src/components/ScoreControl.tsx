@@ -29,6 +29,7 @@ export default function ScoreControl() {
     const [popupPlayers, setPopupPlayers] = useState<PlayerRow[]>([])
     const [popupPlayerId, setPopupPlayerId] = useState<number | ''>('')
     const [popupPosition, setPopupPosition] = useState<PlayerPopupPosition>('left-middle')
+    const [popupDuration, setPopupDuration] = useState(3)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
     // 이닝 조작
@@ -206,7 +207,7 @@ export default function ScoreControl() {
         overlayChannelRef.current.send({
             type: 'broadcast',
             event: 'PLAYER_POPUP',
-            payload: { player, position: popupPosition } as PlayerPopupPayload,
+            payload: { player, position: popupPosition, duration: popupDuration } as PlayerPopupPayload,
         })
     }
 
@@ -460,14 +461,25 @@ export default function ScoreControl() {
                           </button>
                       </div>
 
-                      {/* 확인 버튼 */}
-                      <button
-                          onClick={broadcastPlayerPopup}
-                          disabled={popupPlayerId === ''}
-                          className="w-full h-12 bg-[#6366f1] hover:bg-[#4f46e5] disabled:bg-[#555] disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
-                      >
-                          확인 (3초 표시)
-                      </button>
+                      {/* 확인 버튼 + 노출 시간 */}
+                      <div className="flex items-center gap-2">
+                          <button
+                              onClick={broadcastPlayerPopup}
+                              disabled={popupPlayerId === ''}
+                              className="flex-1 h-12 bg-[#6366f1] hover:bg-[#4f46e5] disabled:bg-[#555] disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
+                          >
+                              확인
+                          </button>
+                          <button
+                              onClick={() => setPopupDuration(prev => Math.max(1, prev - 1))}
+                              className="w-9 h-12 bg-[#444] text-white text-lg font-bold rounded-xl active:opacity-80"
+                          >−</button>
+                          <div className="w-12 text-center text-white font-bold text-sm">{popupDuration}초</div>
+                          <button
+                              onClick={() => setPopupDuration(prev => Math.min(30, prev + 1))}
+                              className="w-9 h-12 bg-[#444] text-white text-lg font-bold rounded-xl active:opacity-80"
+                          >+</button>
+                      </div>
                   </div>
               )}
           </div>

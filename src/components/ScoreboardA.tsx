@@ -86,7 +86,8 @@ export default function ScoreboardA() {
         if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
         setImgOrientation('portrait')
         setPlayerPopup(payload as PlayerPopupPayload)
-        popupTimerRef.current = setTimeout(() => setPlayerPopup(null), 3000)
+        const ms = ((payload as PlayerPopupPayload).duration ?? 3) * 1000
+        popupTimerRef.current = setTimeout(() => setPlayerPopup(null), ms)
       })
       .subscribe()
 
@@ -226,7 +227,7 @@ export default function ScoreboardA() {
           zIndex: 200,
           boxShadow: '0 6px 28px rgba(0,0,0,0.65)',
           border: '1px solid rgba(255,255,255,0.12)',
-          animation: `${animName} 3s ease forwards`,
+          animation: `${animName} ${playerPopup.duration ?? 3}s ease forwards`,
         }}>
           {/* 상단 - 이미지 */}
           <div style={{ width: `${imgW}px`, height: `${imgH}px`, backgroundColor: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

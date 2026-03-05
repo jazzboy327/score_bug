@@ -100,4 +100,5 @@ export type PlayerPopupPosition = 'left-middle' | 'right-middle'
 export interface PlayerPopupPayload {
   player: PlayerRow;
   position: PlayerPopupPosition;
+  duration: number; // seconds
 }
