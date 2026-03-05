@@ -12,7 +12,7 @@ export class SupabaseGameinfoService implements GameInfoService {
     }
 
     subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void {
-        const channel = supabase.channel('game_info').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_info' }, (payload) => {
+        const channel = supabase.channel(`game_info-${Date.now()}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_info' }, (payload) => {
             callback(payload.new as GameInfoRow);
         }).subscribe();
         return () => {

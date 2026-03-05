@@ -4,7 +4,7 @@ import type { ScoreRow, ScoreService } from '../types/scoreboard';
 
 export class SupabaseScoreService implements ScoreService {
     subscribeToScoreUpdates(callback: (score: ScoreRow) => void): () => void {
-        const channel = supabase.channel('scores').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scores' }, (payload) => {
+        const channel = supabase.channel(`scores-${Date.now()}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scores' }, (payload) => {
             callback(payload.new as ScoreRow);
         }).subscribe();
         return () => {

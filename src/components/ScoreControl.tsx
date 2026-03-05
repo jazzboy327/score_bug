@@ -190,6 +190,12 @@ export default function ScoreControl() {
         playersService.getAllPlayersByTeam(team.id).then(players => {
             setPopupPlayers(players)
             setPopupPlayerId('')
+            players.forEach(p => {
+                if (p.photo_url) {
+                    const img = new Image()
+                    img.src = p.photo_url
+                }
+            })
         }).catch(console.error)
     }, [popupTeamSide, gameInfo, allTeams])
 
