@@ -57,6 +57,7 @@ export default function ScoreboardB() {
   const [overlayScale, setOverlayScale] = useState(1.0)
   const [playerPopup, setPlayerPopup] = useState<PlayerPopupPayload | null>(null)
   const [imgOrientation, setImgOrientation] = useState<'portrait' | 'landscape'>('portrait')
+  const [popupKey, setPopupKey] = useState(0)
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function ScoreboardB() {
       .on('broadcast', { event: 'PLAYER_POPUP' }, ({ payload }) => {
         if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
         setImgOrientation('portrait')
+        setPopupKey(k => k + 1)
         setPlayerPopup(payload as PlayerPopupPayload)
         const ms = ((payload as PlayerPopupPayload).duration ?? 3) * 1000
         popupTimerRef.current = setTimeout(() => setPlayerPopup(null), ms)
@@ -209,6 +211,7 @@ export default function ScoreboardB() {
 
       {/* 선수 프로필 팝업 - Media Card */}
       {playerPopup && (() => {
+        // key={popupKey} 로 강제 remount → 애니메이션 재시작
         const isLandscape = imgOrientation === 'landscape'
         const cardWidth = isLandscape ? 375 : 225
         const imgW = isLandscape ? 375 : 225
@@ -218,7 +221,7 @@ export default function ScoreboardB() {
           ? `playerPopupFromLeft${animSuffix}`
           : `playerPopupFromRight${animSuffix}`
         return (
-        <div style={{
+        <div key={popupKey} style={{
           position: 'fixed',
           top: '50%',
           ...(playerPopup.position === 'left-middle' ? { left: '20px' } : { right: '20px' }),

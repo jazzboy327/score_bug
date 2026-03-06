@@ -30,6 +30,8 @@ export default function ScoreControl() {
     const [popupPlayerId, setPopupPlayerId] = useState<number | ''>('')
     const [popupPosition, setPopupPosition] = useState<PlayerPopupPosition>('left-middle')
     const [popupDuration, setPopupDuration] = useState(3)
+    const [isBroadcasting, setIsBroadcasting] = useState(false)
+    const broadcastCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
     // 이닝 조작
@@ -201,7 +203,7 @@ export default function ScoreControl() {
     }, [popupTeamSide, gameInfo, allTeams])
 
     const broadcastPlayerPopup = () => {
-        if (!overlayChannelRef.current || popupPlayerId === '') return
+        if (!overlayChannelRef.current || popupPlayerId === '' || isBroadcasting) return
         const player = popupPlayers.find(p => p.id === popupPlayerId)
         if (!player) return
         overlayChannelRef.current.send({
@@ -209,6 +211,9 @@ export default function ScoreControl() {
             event: 'PLAYER_POPUP',
             payload: { player, position: popupPosition, duration: popupDuration } as PlayerPopupPayload,
         })
+        setIsBroadcasting(true)
+        if (broadcastCooldownRef.current) clearTimeout(broadcastCooldownRef.current)
+        broadcastCooldownRef.current = setTimeout(() => setIsBroadcasting(false), popupDuration * 1000)
     }
 
     const broadcastOverlayUpdate = (position: OverlayPosition, scale: number) => {
@@ -465,10 +470,10 @@ export default function ScoreControl() {
                       <div className="flex items-center gap-2">
                           <button
                               onClick={broadcastPlayerPopup}
-                              disabled={popupPlayerId === ''}
+                              disabled={popupPlayerId === '' || isBroadcasting}
                               className="flex-1 h-12 bg-[#6366f1] hover:bg-[#4f46e5] disabled:bg-[#555] disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
                           >
-                              확인
+                              {isBroadcasting ? '방송 중...' : '확인'}
                           </button>
                           <button
                               onClick={() => setPopupDuration(prev => Math.max(1, prev - 1))}
