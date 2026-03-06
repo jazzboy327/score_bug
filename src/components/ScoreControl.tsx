@@ -31,6 +31,7 @@ export default function ScoreControl() {
     const [popupPosition, setPopupPosition] = useState<PlayerPopupPosition>('left-middle')
     const [popupDuration, setPopupDuration] = useState(3)
     const [isBroadcasting, setIsBroadcasting] = useState(false)
+    const [playerDropdownOpen, setPlayerDropdownOpen] = useState(false)
     const broadcastCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
@@ -436,19 +437,38 @@ export default function ScoreControl() {
                           </button>
                       </div>
 
-                      {/* 선수 선택 */}
-                      <select
-                          value={popupPlayerId}
-                          onChange={e => setPopupPlayerId(e.target.value ? Number(e.target.value) : '')}
-                          className="w-full px-3 py-2 bg-[#444] text-white rounded-xl border border-[#555] focus:outline-none"
-                      >
-                          <option value="">선수 선택</option>
-                          {popupPlayers.map(p => (
-                              <option key={p.id} value={p.id}>
-                                  {p.number != null ? `#${p.number} ` : ''}{p.name}{p.position ? ` (${p.position})` : ''}
-                              </option>
-                          ))}
-                      </select>
+                      {/* 선수 선택 - 커스텀 드롭다운 */}
+                      <div className="relative">
+                          <button
+                              onClick={() => setPlayerDropdownOpen(prev => !prev)}
+                              className="w-full px-3 py-2.5 bg-[#444] text-left text-white rounded-xl border border-[#555] flex items-center justify-between"
+                          >
+                              <span className={popupPlayerId === '' ? 'text-gray-400' : 'text-white'}>
+                                  {popupPlayerId === ''
+                                      ? '선수 선택'
+                                      : (() => { const p = popupPlayers.find(p => p.id === popupPlayerId); return p ? `${p.number != null ? `#${p.number} ` : ''}${p.name}` : '선수 선택' })()
+                                  }
+                              </span>
+                              <span className="text-gray-400 text-xs">{playerDropdownOpen ? '▲' : '▼'}</span>
+                          </button>
+                          {playerDropdownOpen && (
+                              <div className="absolute z-50 w-full mt-1 bg-[#333] border border-[#555] rounded-xl overflow-hidden shadow-xl max-h-48 overflow-y-auto">
+                                  {popupPlayers.length === 0 && (
+                                      <div className="text-gray-400 text-sm text-center py-3">선수 없음</div>
+                                  )}
+                                  {popupPlayers.map(p => (
+                                      <button
+                                          key={p.id}
+                                          onClick={() => { setPopupPlayerId(p.id); setPlayerDropdownOpen(false) }}
+                                          className={`w-full text-left px-3 py-2.5 text-sm transition-colors active:opacity-80 ${popupPlayerId === p.id ? 'bg-[#6366f1] text-white' : 'text-gray-200 hover:bg-[#444]'}`}
+                                      >
+                                          {p.number != null ? <span className="text-[#fbbf24] font-bold">#{p.number} </span> : null}
+                                          {p.name}{p.position ? <span className="opacity-60"> ({p.position})</span> : null}
+                                      </button>
+                                  ))}
+                              </div>
+                          )}
+                      </div>
 
                       {/* 위치 선택 */}
                       <div className="flex gap-2">
