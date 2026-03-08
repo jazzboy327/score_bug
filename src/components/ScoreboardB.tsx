@@ -230,7 +230,7 @@ export default function ScoreboardB() {
           overflow: 'hidden',
           zIndex: 200,
           boxShadow: '0 6px 28px rgba(0,0,0,0.65)',
-          border: '1px solid rgba(255,255,255,0.12)',
+          border: '2px solid rgba(255,255,255,0.45)',
           animation: `${animName} ${playerPopup.duration ?? 3}s ease forwards`,
         }}>
           {/* 상단 - 이미지 */}

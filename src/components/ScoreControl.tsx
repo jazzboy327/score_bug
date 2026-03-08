@@ -32,6 +32,7 @@ export default function ScoreControl() {
     const [popupDuration, setPopupDuration] = useState(3)
     const [isBroadcasting, setIsBroadcasting] = useState(false)
     const [playerDropdownOpen, setPlayerDropdownOpen] = useState(false)
+    const [popupPlayerType, setPopupPlayerType] = useState<'all' | 'p' | 'b'>('all')
     const broadcastCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
@@ -437,6 +438,21 @@ export default function ScoreControl() {
                           </button>
                       </div>
 
+                      {/* 투수/타자 필터 */}
+                      <div className="flex gap-1">
+                          {([ 'p', 'b'] as const).map(type => {
+                              const label = type === 'p' ? '투수' : '타자'
+                              const active = popupPlayerType === type
+                              return (
+                                  <button
+                                      key={type}
+                                      onClick={() => { setPopupPlayerType(type); setPopupPlayerId(''); setPlayerDropdownOpen(false) }}
+                                      className={`flex-1 h-8 rounded-lg text-xs font-bold transition-colors ${active ? (type === 'p' ? 'bg-blue-600 text-white' : type === 'b' ? 'bg-orange-500 text-white' : 'bg-[#555] text-white') : 'bg-[#333] text-gray-400'}`}
+                                  >{label}</button>
+                              )
+                          })}
+                      </div>
+
                       {/* 선수 선택 - 커스텀 드롭다운 */}
                       <div className="relative">
                           <button
@@ -453,19 +469,23 @@ export default function ScoreControl() {
                           </button>
                           {playerDropdownOpen && (
                               <div className="absolute z-50 w-full mt-1 bg-[#333] border border-[#555] rounded-xl overflow-hidden shadow-xl max-h-48 overflow-y-auto">
-                                  {popupPlayers.length === 0 && (
-                                      <div className="text-gray-400 text-sm text-center py-3">선수 없음</div>
-                                  )}
-                                  {popupPlayers.map(p => (
-                                      <button
-                                          key={p.id}
-                                          onClick={() => { setPopupPlayerId(p.id); setPlayerDropdownOpen(false) }}
-                                          className={`w-full text-left px-3 py-2.5 text-sm transition-colors active:opacity-80 ${popupPlayerId === p.id ? 'bg-[#6366f1] text-white' : 'text-gray-200 hover:bg-[#444]'}`}
-                                      >
-                                          {p.number != null ? <span className="text-[#fbbf24] font-bold">#{p.number} </span> : null}
-                                          {p.name}{p.position ? <span className="opacity-60"> ({p.position})</span> : null}
-                                      </button>
-                                  ))}
+                                  {(() => {
+                                      const filtered = popupPlayerType === 'all'
+                                          ? popupPlayers
+                                          : popupPlayers.filter(p => p.player_type === popupPlayerType)
+                                      return filtered.length === 0 ? (
+                                          <div className="text-gray-400 text-sm text-center py-3">선수 없음</div>
+                                      ) : filtered.map(p => (
+                                          <button
+                                              key={p.id}
+                                              onClick={() => { setPopupPlayerId(p.id); setPlayerDropdownOpen(false) }}
+                                              className={`w-full text-left px-3 py-2.5 text-sm transition-colors active:opacity-80 ${popupPlayerId === p.id ? 'bg-[#6366f1] text-white' : 'text-gray-200 hover:bg-[#444]'}`}
+                                          >
+                                              {p.number != null ? <span className="text-[#fbbf24] font-bold">#{p.number} </span> : null}
+                                              {p.name}{p.player_type ? <span className="opacity-60"> ({p.player_type === 'p' ? '투수' : '타자'  })</span> : null}
+                                          </button>
+                                      ))
+                                  })()}
                               </div>
                           )}
                       </div>

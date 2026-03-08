@@ -51,7 +51,7 @@ export class SupabasePlayersService {
 
         const { error } = await supabase.storage
             .from('player_photo')
-            .upload(path, file, { upsert: true, contentType: file.type })
+            .upload(path, file, { upsert: true, contentType: file.type, cacheControl: '86400' })
 
         if (error) throw error
 

@@ -18,6 +18,7 @@ const emptyForm = {
     position: '',
     sub_position: '',
     hand_type: '',
+    player_type: '' as 'p' | 'b' | '',
 }
 
 export default function PlayerManagement() {
@@ -79,6 +80,7 @@ export default function PlayerManagement() {
             position: player.position || '',
             sub_position: player.sub_position || '',
             hand_type: player.hand_type || '',
+            player_type: player.player_type || '',
         })
         setPhotoFile(null)
         setPhotoPreview(player.photo_url || '')
@@ -108,6 +110,7 @@ export default function PlayerManagement() {
                 sub_position: formData.sub_position || undefined,
                 hand_type: formData.hand_type || undefined,
                 photo_url: photo_url ?? (editingPlayer?.photo_url || undefined),
+                player_type: (formData.player_type || undefined) as 'p' | 'b' | undefined,
             }
 
             if (editingPlayer) {
@@ -239,8 +242,15 @@ export default function PlayerManagement() {
                                                 )}
                                                 <span className="text-white font-semibold text-sm truncate">{player.name}</span>
                                             </div>
-                                            <div className="text-gray-400 text-xs mt-0.5 truncate">
-                                                {[player.position, player.sub_position].filter(Boolean).join(', ') || '—'}
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                                {player.player_type && (
+                                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${player.player_type === 'p' ? 'bg-blue-600 text-white' : 'bg-orange-500 text-white'}`}>
+                                                        {player.player_type === 'p' ? '투수' : '타자'}
+                                                    </span>
+                                                )}
+                                                <span className="text-gray-400 text-xs truncate">
+                                                    {[player.position, player.sub_position].filter(Boolean).join(', ') || '—'}
+                                                </span>
                                             </div>
                                             {player.hand_type && (
                                                 <div className="text-gray-500 text-xs">{player.hand_type}</div>
@@ -356,6 +366,26 @@ export default function PlayerManagement() {
                                             <option key={p} value={p}>{p}</option>
                                         ))}
                                     </select>
+                                </div>
+                            </div>
+
+                            {/* 투수/타자 구분 */}
+                            <div>
+                                <label className="block text-white text-sm font-medium mb-2">구분</label>
+                                <div className="flex gap-2">
+                                    {(['', 'p', 'b'] as const).map((val) => {
+                                        const label = val === '' ? '미설정' : val === 'p' ? '투수' : '타자'
+                                        return (
+                                            <button
+                                                key={val}
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, player_type: val }))}
+                                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${formData.player_type === val ? (val === 'p' ? 'bg-blue-600 text-white' : val === 'b' ? 'bg-orange-500 text-white' : 'bg-gray-500 text-white') : 'bg-gray-700 text-gray-400'}`}
+                                            >
+                                                {label}
+                                            </button>
+                                        )
+                                    })}
                                 </div>
                             </div>
 

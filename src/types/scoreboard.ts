@@ -78,6 +78,7 @@ export interface PlayerRow {
   sub_position?: string;
   hand_type?: string;
   photo_url?: string;
+  player_type?: 'p' | 'b';
   created_at: string;
   updated_at: string;
 }
