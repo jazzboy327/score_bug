@@ -33,7 +33,9 @@ export default function ScoreControl() {
     const [isBroadcasting, setIsBroadcasting] = useState(false)
     const [playerDropdownOpen, setPlayerDropdownOpen] = useState(false)
     const [popupPlayerType, setPopupPlayerType] = useState<'all' | 'p' | 'b'>('all')
+    const [connStatus, setConnStatus] = useState<'connected' | 'disconnected'>('connected')
     const broadcastCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const connectedOnceRef = useRef(false)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
 
     // 이닝 조작
@@ -264,7 +266,18 @@ export default function ScoreControl() {
         });
 
         overlayChannelRef.current = supabase.channel(`overlay-control-${gameId}`)
-        overlayChannelRef.current.subscribe()
+        overlayChannelRef.current.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                if (connectedOnceRef.current) {
+                    fetchScore()
+                    fetchGameInfo()
+                }
+                connectedOnceRef.current = true
+                setConnStatus('connected')
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                setConnStatus('disconnected')
+            }
+        })
 
         fetchScore();
         fetchGameInfo();
@@ -291,6 +304,13 @@ export default function ScoreControl() {
     
     return (
         <div className="bg-[#222] w-screen min-h-screen flex flex-col overflow-y-auto select-none">
+
+          {/* 연결 상태 배너 */}
+          {connStatus === 'disconnected' && (
+            <div className="bg-red-600 text-white text-sm text-center py-2 font-bold tracking-wide">
+              ⚠ 연결이 끊어졌습니다. 재연결 중...
+            </div>
+          )}
 
           {/* 게임 제목 */}
           <div className="text-center pt-3 pb-2 px-4">
