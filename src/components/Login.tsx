@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabaseClient'
 import { Appconfig } from '../config'
+import { SupabaseProfileService } from '../services/SupabaseProfileService'
+
+const profileService = new SupabaseProfileService()
 
 export default function Login() {
     const navigate = useNavigate()
@@ -10,7 +13,8 @@ export default function Login() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        code: ''
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
@@ -68,16 +72,29 @@ export default function Login() {
                 return
             }
 
+            const codePattern = /^[a-z][a-z0-9-]{2,19}$/
+            if (!codePattern.test(formData.code)) {
+                setError('코드는 소문자 영문으로 시작하고, 영문 소문자/숫자/하이픈만 사용 가능하며 3~20자여야 합니다.')
+                return
+            }
+
+            const available = await profileService.isCodeAvailable(formData.code)
+            if (!available) {
+                setError('이미 사용 중인 코드입니다. 다른 코드를 입력해주세요.')
+                return
+            }
+
             const { error } = await supabase.auth.signUp({
                 email: formData.email,
-                password: formData.password
+                password: formData.password,
+                options: { data: { code: formData.code } }
             })
 
             if (error) {
                 setError(error.message)
             } else {
                 setSuccess('회원가입이 완료되었습니다! 이메일을 확인해주세요.')
-                setFormData({ email: '', password: '', confirmPassword: '' })
+                setFormData({ email: '', password: '', confirmPassword: '', code: '' })
                 setTimeout(() => {
                     setShowRegisterModal(false)
                     setSuccess('')
@@ -105,7 +122,7 @@ export default function Login() {
                 setError(error.message)
             } else {
                 setSuccess('이메일을 확인해주세요.')
-                setFormData({ email: '', password: '', confirmPassword: '' })
+                setFormData({ email: '', password: '', confirmPassword: '', code: '' })
                 setTimeout(() => {
                     setShowResetPwModal(false)
                     setSuccess('')
@@ -121,28 +138,28 @@ export default function Login() {
 
     const openRegisterModal = () => {
         setShowRegisterModal(true)
-        setFormData({ email: '', password: '', confirmPassword: '' })
+        setFormData({ email: '', password: '', confirmPassword: '', code: '' })
         setError('')
         setSuccess('')
     }
 
     const openResetPwModal = () => {
         setShowResetPwModal(true)
-        setFormData({ email: '', password: '', confirmPassword: '' })
+        setFormData({ email: '', password: '', confirmPassword: '', code: '' })
         setError('')
         setSuccess('')
     }
 
     const closeResetPwModal = () => {
         setShowResetPwModal(false)
-        setFormData({ email: '', password: '', confirmPassword: '' })
+        setFormData({ email: '', password: '', confirmPassword: '', code: '' })
         setError('')
         setSuccess('')
     }
     
     const closeRegisterModal = () => {
         setShowRegisterModal(false)
-        setFormData({ email: '', password: '', confirmPassword: '' })
+        setFormData({ email: '', password: '', confirmPassword: '', code: '' })
         setError('')
         setSuccess('')
     }
@@ -314,6 +331,23 @@ export default function Login() {
                                     required
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                     placeholder="비밀번호를 다시 입력하세요"
+                                />
+                            </div>
+
+                            {/* 코드 입력 */}
+                            <div>
+                                <label htmlFor="modal-code" className="block text-sm font-medium text-gray-700 mb-2">
+                                    나만의 코드 <span className="text-gray-400 text-xs">(스코어보드 URL에 사용, 예: dan → /oa/dan)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="modal-code"
+                                    name="code"
+                                    value={formData.code}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    placeholder="소문자 영문 시작, 영문/숫자/하이픈, 3~20자 (예: dan, my-team)"
                                 />
                             </div>
 

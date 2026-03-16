@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
 import { SupabaseTeamsService } from '../services/SupabaseTeamsService'
+import { SupabaseProfileService } from '../services/SupabaseProfileService'
 import type { GameInfoWithScore } from '../types/scoreboard'
 import { Appconfig } from "../config"
 import { userAuth } from '../hooks/userAuth'
@@ -11,6 +12,7 @@ import { getContrastYIQ } from '../utils/colorUtils'
 // services
 const gameInfoService = new SupabaseGameinfoService()
 const teamsService = new SupabaseTeamsService()
+const profileService = new SupabaseProfileService()
 // default export
 export default function AdminPanel() {
     const navigate = useNavigate()
@@ -19,6 +21,7 @@ export default function AdminPanel() {
     const [games, setGames] = useState<GameInfoWithScore[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
+    const [userCode, setUserCode] = useState<string | null>(null)
     const [showThemeModal, setShowThemeModal] = useState(false)
     const [selectedGame, setSelectedGame] = useState<GameInfoWithScore | null>(null)
     const [themeColors, setThemeColors] = useState({
@@ -36,6 +39,7 @@ export default function AdminPanel() {
 
     useEffect(() => {
         loadGames()
+        profileService.getMyCode().then(code => setUserCode(code))
     }, [])
 
     const loadGames = async () => {
@@ -106,6 +110,22 @@ export default function AdminPanel() {
     const handleOpenController = (gameId: number) => {
         const controllerUrl = `${window.location.origin}${Appconfig.controller_url.replace(':gameId', gameId.toString())}`
         window.open(controllerUrl, '_blank', 'width=1200,height=800')
+    }
+
+    const handleSetLive = async (gameId: number) => {
+        try {
+            const game = games.find(g => g.game_id === gameId)
+            const isCurrentlyLive = game?.is_live ?? false
+            const result = await gameInfoService.setLiveGame(gameId, isCurrentlyLive)
+            if (result.success) {
+                loadGames()
+            } else {
+                alert('활성화에 실패했습니다: ' + result.error)
+            }
+        } catch (err) {
+            console.error('Failed to set live game:', err)
+            alert('활성화에 실패했습니다.')
+        }
     }
 
     const handleSwapTeams = async (game: GameInfoWithScore) => {
@@ -221,7 +241,7 @@ export default function AdminPanel() {
                 {/* 헤더 */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-2">경기 목록</h1>
+                        <h1 className="text-4xl font-bold text-white mb-2">경기 <br /> 목록</h1>
                         <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
                     </div>
                     <div className="flex gap-3 items-center">
@@ -246,6 +266,39 @@ export default function AdminPanel() {
                     </div>
                 )}
 
+                {/* 고정 URL 안내 */}
+                {userCode && (
+                    <div className="bg-gray-800 border border-gray-700 rounded-2xl p-4 mb-6">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-yellow-400 font-bold text-sm">내 스코어보드 고정 URL</span>
+                            <span className="text-gray-400 text-xs">— 진행 중인 게임이 자동으로 표시됩니다</span>
+                            <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded font-mono">{userCode}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            {[
+                                { label: 'Type A', path: `/oa/${userCode}` },
+                                { label: 'Type B', path: `/ob/${userCode}` },
+                                { label: 'Controller', path: `/c/${userCode}` }
+                            ].map(({ label, path }) => {
+                                const fullUrl = `${window.location.origin}${path}`
+                                return (
+                                    <div key={path} className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
+                                        <span className="text-gray-400 text-xs">{label}</span>
+                                        <span className="text-green-400 text-xs font-mono">{fullUrl}</span>
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(fullUrl).then(() => alert(`${label} URL 복사됨!`))}
+                                            className="text-gray-400 hover:text-white text-xs transition-colors"
+                                            title="복사"
+                                        >
+                                            📋
+                                        </button>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* 경기 목록 */}
                 <div className="mb-6">
                     {games.length === 0 ? (
@@ -258,11 +311,10 @@ export default function AdminPanel() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {games.map((game) => (
                                 // 분리된 GameCard 컴포넌트를 사용
-                                <GameCard 
-                                    key={game.game_id} 
+                                <GameCard
+                                    key={game.game_id}
                                     game={game}
                                     theme={theme}
-                                    // 필요한 핸들러 함수들을 props로 전달
                                     onOverlayView={handleOverlayView}
                                     onOpenController={handleOpenController}
                                     onEdit={handleEditGame}
@@ -270,6 +322,7 @@ export default function AdminPanel() {
                                     onCopyUrl={handleCopyUrl}
                                     onThemeChange={handleThemeChange}
                                     onSwapTeams={handleSwapTeams}
+                                    onSetLive={handleSetLive}
                                 />
                             ))}
                         </div>

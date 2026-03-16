@@ -90,6 +90,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
     // 선택된 팀의 색상/로고 (숨겨진 상태)
     const [awayTeamMeta, setAwayTeamMeta] = useState({ logo_url: '', bg_color: '' })
     const [homeTeamMeta, setHomeTeamMeta] = useState({ logo_url: '', bg_color: '' })
+    const [currentIsLive, setCurrentIsLive] = useState(false)
 
     // 수정 모드일 때 기존 데이터 로드
     useEffect(() => {
@@ -128,6 +129,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     game_time: timeStr,
                     field: gameData.field || '',
                 })
+                setCurrentIsLive(gameData.is_live)
                 // 수정 모드에서는 수기 입력 모드로
                 setAwayMode('manual')
                 setHomeMode('manual')
@@ -199,7 +201,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     home_team: formData.h_team,
                     date_time: gameDateTime,
                     field: formData.field,
-                    is_live: true,
+                    is_live: false,
                     home_bg_color: homeTeamMeta.bg_color || '#374151',
                     away_bg_color: awayTeamMeta.bg_color || '#f7f7f7',
                     home_team_logo_url: homeTeamMeta.logo_url || undefined,
@@ -230,7 +232,7 @@ export default function GameForm({ mode = 'create' }: GameFormProps) {
                     home_team: formData.h_team,
                     date_time: gameDateTime,
                     field: formData.field,
-                    is_live: true
+                    is_live: currentIsLive
                 } as GameInfoRow)
                 if (updatedGame.success) {
                     alert('경기 정보가 성공적으로 수정되었습니다!')

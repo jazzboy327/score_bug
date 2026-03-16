@@ -1,8 +1,5 @@
 export const Appconfig = {
     admin_panel_url: '/a',
-    scoreboardA_v1_template_url: '/oa1/:gameId',
-    scoreboardB_v1_template_url: '/ob1/:gameId',
-
     scoreboardA_template_url: '/oa/:gameId',
     scoreboardB_template_url: '/ob/:gameId',
     controller_url: '/c/:gameId',

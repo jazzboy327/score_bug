@@ -110,6 +110,49 @@ export class SupabaseGameinfoService implements GameInfoService {
         return data;
     }
 
+    async setLiveGame(gameId: number, isCurrentlyLive: boolean): Promise<{success: boolean, error?: string}> {
+        const userId = await this.getUserId()
+        // 현재 유저의 모든 게임 is_live=false
+        const { error: resetError } = await supabase
+            .from('game_info')
+            .update({ is_live: false })
+            .eq('user_id', userId)
+        if (resetError) return { success: false, error: resetError.message }
+
+        // 이미 방송중이었으면 전체 OFF로 종료 (토글)
+        if (isCurrentlyLive) return { success: true }
+
+        // 선택한 게임만 is_live=true
+        const { error } = await supabase
+            .from('game_info')
+            .update({ is_live: true })
+            .eq('game_id', gameId)
+        if (error) return { success: false, error: error.message }
+        return { success: true }
+    }
+
+    async getLiveGameByUserCode(code: string): Promise<GameInfoRow | null> {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('code', code)
+            .maybeSingle()
+
+        if (!profile) return null
+
+        const { data, error } = await supabase
+            .from('game_info')
+            .select('*')
+            .eq('user_id', profile.id)
+            .eq('is_live', true)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+        if (error) return null
+        return data
+    }
+
     async deleteGame(gameId: number): Promise<void> {
         const { error } = await supabase
             .from('game_info')

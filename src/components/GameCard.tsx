@@ -44,8 +44,8 @@ const DropdownMenu = ({ game, onEdit, onDelete, onCopyUrl, onSwapTeams, closeMen
             <ul className="text-sm text-gray-200">
                 <li onClick={handleEdit} className="p-3 hover:bg-gray-600 rounded-t-lg cursor-pointer flex items-center">✏️ <span className="ml-2">경기 수정</span></li>
                 <li onClick={handleSwapTeams} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔄 <span className="ml-2">홈/원정 전환</span></li>
-                <li onClick={handleCopyUrlA} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">A(700x345)URL 복사</span></li>
-                <li onClick={handleCopyUrlB} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">B(1200x60)URL 복사</span></li>
+                <li onClick={handleCopyUrlA} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">A타입 URL 복사</span></li>
+                <li onClick={handleCopyUrlB} className="p-3 hover:bg-gray-600 cursor-pointer flex items-center">🔗 <span className="ml-2">B타입 URL 복사</span></li>
                 <li onClick={handleDelete} className="p-3 text-red-400 hover:bg-red-900/50 rounded-b-lg cursor-pointer flex items-center">🗑️ <span className="ml-2">삭제</span></li>
             </ul>
         </div>
@@ -64,23 +64,24 @@ const formatDateTime = (dateTime: string) => {
 }
 
 const getStatusBadge = (isLive: boolean, date_time: string) => {
-    const _isLive = isLive 
+    if (isLive) {
+        return (
+            <span className="px-3 py-1 ml-2 text-xs font-medium bg-red-500 text-white rounded-full">
+                🔴 방송중
+            </span>
+        )
+    }
     const live_check = getisLive(date_time)
-    return live_check === "ing" && _isLive ? (
-        <span className="px-3 py-1 ml-2 text-xs font-medium bg-red-500 text-white rounded-full">
-            진행중
-        </span>
-    ) : live_check === "wait" ? (
+    if (live_check === "end") {
+        return (
+            <span className="px-3 py-1 ml-2 text-xs font-medium bg-gray-600 text-gray-300 rounded-full">
+                종료
+            </span>
+        )
+    }
+    return (
         <span className="px-3 py-1 ml-2 text-xs font-medium bg-gray-500 text-white rounded-full">
             대기중
-        </span>
-    ) : !_isLive || live_check === "end" ? (
-        <span className="px-3 py-1 ml-2 text-xs font-medium bg-gray-500 text-white rounded-full">
-            종료
-        </span>
-    ) : (
-        <span className="px-3 py-1 ml-2 text-xs font-medium bg-gray-500 text-white rounded-full">
-            오류
         </span>
     )
 }
@@ -102,7 +103,7 @@ interface ThemeType {
 }
 
 // 메인 카드 컴포넌트
-export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange, onSwapTeams }: { game: GameInfoWithScore, theme?: ThemeType, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void, onSwapTeams: (game: GameInfoWithScore) => void }) => {
+export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit, onDelete, onCopyUrl, onThemeChange, onSwapTeams, onSetLive }: { game: GameInfoWithScore, theme?: ThemeType, onOverlayView: (gameId: number, template: 'a' | 'b') => void, onOpenController: (gameId: number) => void, onEdit: (gameId: number) => void, onDelete: (gameId: number) => void, onCopyUrl: (gameId: number, template: 'a' | 'b') => void, onThemeChange: (game: GameInfoWithScore) => void, onSwapTeams: (game: GameInfoWithScore) => void, onSetLive: (gameId: number) => void }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -236,13 +237,13 @@ export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit,
                         onClick={() => onOverlayView(game.game_id, 'a')}
                         className={`flex-1 ${buttonSecondaryClass} text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm`}
                     >
-                        📺 A타입 보기(700x345)
+                        📺 스코어보드 A타입 보기
                     </button>
                     <button
                         onClick={() => onOverlayView(game.game_id, 'b')}
                         className={`flex-1 ${buttonSecondaryClass} text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm`}
                     >
-                        📺 B타입 보기(1200x60)
+                        📺 스코어보드 B타입 보기
                     </button>
                 </div>
                 <div className="flex space-x-2">
@@ -252,7 +253,16 @@ export const GameCard = ({ game, theme, onOverlayView, onOpenController, onEdit,
                     >
                         🎨 테마 변경
                     </button>
-
+                    <button
+                        onClick={() => onSetLive(game.game_id)}
+                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 text-sm ${
+                            game.is_live
+                                ? 'bg-red-600 hover:bg-red-700 text-white'
+                                : 'bg-gray-600 hover:bg-green-600 text-white'
+                        }`}
+                    >
+                        {game.is_live ? '🔴 방송중' : '▶ Live'}
+                    </button>
                 </div>
             </div>
         </div>

@@ -15,6 +15,10 @@ const playersService = new SupabasePlayersService();
 
 export default function ScoreControl() {
     const { gameId } = useParams<{ gameId: string }>()
+    const isUserCode = isNaN(Number(gameId))
+    const [resolvedGameId, setResolvedGameId] = useState<number | null>(
+        isUserCode ? null : Number(gameId)
+    )
     const [score, setScore] = useState<ScoreRow | null>(null)
     const [gameInfo, setGameInfo] = useState<any>(null)
     // const [ setGameInfo] = useState<GameInfoRow | null>(null)
@@ -184,6 +188,29 @@ export default function ScoreControl() {
     };
 
     // 팀 목록 로드
+    // userCode 모드: 코드 → is_live 게임 ID 조회 + is_live 변경 실시간 감지
+    useEffect(() => {
+        if (!isUserCode || !gameId) return
+
+        const resolve = () => {
+            gameInfoService.getLiveGameByUserCode(gameId).then(game => {
+                if (game) {
+                    setGameInfo(game)
+                    setResolvedGameId(game.game_id)
+                } else {
+                    setGameInfo(null)
+                    setResolvedGameId(null)
+                }
+            })
+        }
+
+        resolve()
+
+        // game_info 변경 시 live 게임 재조회 (is_live 토글 감지)
+        const unsubscribe = gameInfoService.subscribeToGameInfoUpdates(() => resolve())
+        return () => unsubscribe()
+    }, [gameId, isUserCode])
+
     useEffect(() => {
         teamsService.getAllTeams().then(setAllTeams).catch(console.error)
     }, [])
@@ -240,32 +267,26 @@ export default function ScoreControl() {
     }
 
     useEffect(() => {
+        if (resolvedGameId === null) return
+
         const fetchScore = async () => {
-            const data = await scoreService.getScore(Number(gameId));
-            if (data) {
-                setScore(data);
-            }
+            const data = await scoreService.getScore(resolvedGameId);
+            if (data) setScore(data);
         }
         const fetchGameInfo = async () => {
-            const data = await gameInfoService.getGameInfo(Number(gameId));
-            if (data) {
-                setGameInfo(data);
-            }
+            const data = await gameInfoService.getGameInfo(resolvedGameId);
+            if (data) setGameInfo(data);
         }
 
         const unsubscribeScore = scoreService.subscribeToScoreUpdates((newScore) => {
-            if (newScore.game_id === Number(gameId)) {
-                setScore(newScore);
-            }
+            if (newScore.game_id === resolvedGameId) setScore(newScore);
         });
 
         const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
-            if (newGameInfo.game_id === Number(gameId)) {
-                setGameInfo(newGameInfo);
-            }
+            if (newGameInfo.game_id === resolvedGameId) setGameInfo(newGameInfo);
         });
 
-        overlayChannelRef.current = supabase.channel(`overlay-control-${gameId}`)
+        overlayChannelRef.current = supabase.channel(`overlay-control-${resolvedGameId}`)
         overlayChannelRef.current.subscribe((status) => {
             if (status === 'SUBSCRIBED') {
                 if (connectedOnceRef.current) {
@@ -289,7 +310,7 @@ export default function ScoreControl() {
                 supabase.removeChannel(overlayChannelRef.current)
             }
         }
-    }, [gameId]);
+    }, [resolvedGameId]);
 
     const inning = score?.inning ?? 1
     const h_score = score?.h_score ?? 0
@@ -581,7 +602,17 @@ export default function ScoreControl() {
                       <div className="w-full">
                           <div className="flex items-center justify-between mb-2">
                               <div className="text-white text-base font-bold">스케일</div>
-                              <div className="text-[#f97316] text-base font-bold">{overlayScale.toFixed(1)}×</div>
+                              <div className="flex items-center gap-2">
+                                  <button
+                                      onClick={() => handleScaleChange(Math.max(0.5, parseFloat((overlayScale - 0.1).toFixed(1))))}
+                                      className="w-7 h-7 rounded bg-[#444] text-white text-base font-bold active:opacity-80 flex items-center justify-center"
+                                  >‹</button>
+                                  <div className="text-[#f97316] text-base font-bold w-10 text-center">{overlayScale.toFixed(1)}×</div>
+                                  <button
+                                      onClick={() => handleScaleChange(Math.min(3.0, parseFloat((overlayScale + 0.1).toFixed(1))))}
+                                      className="w-7 h-7 rounded bg-[#444] text-white text-base font-bold active:opacity-80 flex items-center justify-center"
+                                  >›</button>
+                              </div>
                           </div>
                           <input
                               type="range"

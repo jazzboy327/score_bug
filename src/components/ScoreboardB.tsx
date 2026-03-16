@@ -51,6 +51,10 @@ function getTransformOrigin(position: OverlayPosition): string {
 
 export default function ScoreboardB() {
   const { gameId } = useParams<{ gameId: string }>()
+  const isUserCode = isNaN(Number(gameId))
+  const [resolvedGameId, setResolvedGameId] = useState<number | null>(
+    isUserCode ? null : Number(gameId)
+  )
   const [score, setScore] = useState<ScoreRow | null>(null)
   const [gameInfo, setGameInfo] = useState<GameInfoRow | null>(null)
   const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
@@ -62,25 +66,50 @@ export default function ScoreboardB() {
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const connectedOnceRef = useRef(false)
 
+  // userCode 모드: 코드 → is_live 게임 ID 조회 + is_live 변경 실시간 감지
   useEffect(() => {
+    if (!isUserCode || !gameId) return
+
+    const resolve = () => {
+      gameInfoService.getLiveGameByUserCode(gameId).then(game => {
+        if (game) {
+          setGameInfo(game)
+          setResolvedGameId(game.game_id)
+        } else {
+          setGameInfo(null)
+          setResolvedGameId(null)
+        }
+      })
+    }
+
+    resolve()
+
+    // game_info 변경 시 live 게임 재조회 (is_live 토글 감지)
+    const unsubscribe = gameInfoService.subscribeToGameInfoUpdates(() => resolve())
+    return () => unsubscribe()
+  }, [gameId, isUserCode])
+
+  useEffect(() => {
+    if (resolvedGameId === null) return
+
     const fetchScore = async () => {
-      const data = await scoreService.getScore(Number(gameId))
+      const data = await scoreService.getScore(resolvedGameId)
       if (data) setScore(data)
     }
     const fetchGameInfo = async () => {
-      const data = await gameInfoService.getGameInfo(Number(gameId))
+      const data = await gameInfoService.getGameInfo(resolvedGameId)
       if (data) setGameInfo(data)
     }
 
     const unsubscribeScore = scoreService.subscribeToScoreUpdates((newScore) => {
-      if (newScore.game_id === Number(gameId)) setScore(newScore)
+      if (newScore.game_id === resolvedGameId) setScore(newScore)
     })
     const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
-      if (newGameInfo.game_id === Number(gameId)) setGameInfo(newGameInfo)
+      if (newGameInfo.game_id === resolvedGameId) setGameInfo(newGameInfo)
     })
 
     const overlayChannel = supabase
-      .channel(`overlay-control-${gameId}`)
+      .channel(`overlay-control-${resolvedGameId}`)
       .on('broadcast', { event: 'OVERLAY_UPDATE' }, ({ payload }) => {
         if (payload.position) setOverlayPosition(payload.position as OverlayPosition)
         if (payload.scale !== undefined) setOverlayScale(payload.scale as number)
@@ -115,7 +144,7 @@ export default function ScoreboardB() {
       supabase.removeChannel(overlayChannel)
       if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
     }
-  }, [gameId])
+  }, [resolvedGameId])
 
   const inning = score?.inning ?? 1
   const isTop = score?.is_top ?? true
@@ -133,7 +162,7 @@ export default function ScoreboardB() {
   const homeLogoUrl = gameInfo?.home_team_logo_url
   const awayLogoUrl = gameInfo?.away_team_logo_url
   const titleFontSize = gameInfo?.title_font_size ?? 23
-  const teamNameFontSize = gameInfo?.team_name_font_size ?? 25
+  const teamNameFontSize = gameInfo?.team_name_font_size ?? 20
   const hBgColor = gameInfo?.home_bg_color ?? "#374151"
   const aBgColor = gameInfo?.away_bg_color ?? "#f7f7f7"
   const hTextColor = getContrastYIQ(hBgColor)
@@ -147,7 +176,7 @@ export default function ScoreboardB() {
           height: '47px',
           transform: `scale(${overlayScale})`,
           transformOrigin: getTransformOrigin(overlayPosition),
-          fontFamily: "'Noto Sans KR', 'Pretendard Variable', Pretendard, sans-serif",
+          fontFamily: "'Pretendard Variable','Noto Sans KR', 'Pretendard', 'sans-serif'",
           boxSizing: 'border-box',
         }}>
           {/* SCOREBOARD 콘텐츠 */}

@@ -47,6 +47,8 @@ export interface GameInfoService {
   subscribeToGameInfoUpdates(callback: (gameInfo: GameInfoRow) => void): () => void;
   updateGameInfo(gameInfo: GameInfoRow): Promise<{success: boolean, error?: string}>;
   getGameInfo(gameId: number): Promise<GameInfoRow | null>;
+  getLiveGameByUserCode(code: string): Promise<GameInfoRow | null>;
+  setLiveGame(gameId: number, isCurrentlyLive: boolean): Promise<{success: boolean, error?: string}>;
   createGameInfo(gameInfo: Omit<GameInfoRow, 'game_id' | 'created_at' | 'updated_at'>): Promise<GameInfoRow | null>;
   getAllGames(): Promise<GameInfoRow[]>;
   getAllGamesWithScores(): Promise<GameInfoWithScore[]>;

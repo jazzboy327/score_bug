@@ -29,12 +29,12 @@ function Circle({ active, color = 'green', size = 32 }: { active?: boolean; colo
 
 function getPositionContainerStyle(position: OverlayPosition): React.CSSProperties {
   switch (position) {
-    case 'top-left':      return { position: 'absolute', top: 10, left: 10 }
+    case 'top-left':      return { position: 'absolute', top: 10, left: 20 }
     case 'top-center':    return { position: 'absolute', top: 10, left: 0, right: 0, display: 'flex', justifyContent: 'center' }
-    case 'top-right':     return { position: 'absolute', top: 10, right: 10 }
-    case 'bottom-left':   return { position: 'absolute', bottom: 10, left: 10 }
+    case 'top-right':     return { position: 'absolute', top: 10, right: 20 }
+    case 'bottom-left':   return { position: 'absolute', bottom: 10, left: 20 }
     case 'bottom-center': return { position: 'absolute', bottom: 10, left: 0, right: 0, display: 'flex', justifyContent: 'center' }
-    case 'bottom-right':  return { position: 'absolute', bottom: 10, right: 10 }
+    case 'bottom-right':  return { position: 'absolute', bottom: 10, right: 20 }
   }
 }
 
@@ -51,6 +51,10 @@ function getTransformOrigin(position: OverlayPosition): string {
 
 export default function ScoreboardA() {
   const { gameId } = useParams<{ gameId: string }>()
+  const isUserCode = isNaN(Number(gameId))
+  const [resolvedGameId, setResolvedGameId] = useState<number | null>(
+    isUserCode ? null : Number(gameId)
+  )
   const [score, setScore] = useState<ScoreRow | null>(null)
   const [gameInfo, setGameInfo] = useState<GameInfoRow | null>(null)
   const [overlayPosition, setOverlayPosition] = useState<OverlayPosition>('top-left')
@@ -62,25 +66,50 @@ export default function ScoreboardA() {
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const connectedOnceRef = useRef(false)
 
+  // userCode 모드: 코드 → is_live 게임 ID 조회 + is_live 변경 실시간 감지
   useEffect(() => {
+    if (!isUserCode || !gameId) return
+
+    const resolve = () => {
+      gameInfoService.getLiveGameByUserCode(gameId).then(game => {
+        if (game) {
+          setGameInfo(game)
+          setResolvedGameId(game.game_id)
+        } else {
+          setGameInfo(null)
+          setResolvedGameId(null)
+        }
+      })
+    }
+
+    resolve()
+
+    // game_info 변경 시 live 게임 재조회 (is_live 토글 감지)
+    const unsubscribe = gameInfoService.subscribeToGameInfoUpdates(() => resolve())
+    return () => unsubscribe()
+  }, [gameId, isUserCode])
+
+  useEffect(() => {
+    if (resolvedGameId === null) return
+
     const fetchScore = async () => {
-      const data = await scoreService.getScore(Number(gameId))
+      const data = await scoreService.getScore(resolvedGameId)
       if (data) setScore(data)
     }
     const fetchGameInfo = async () => {
-      const data = await gameInfoService.getGameInfo(Number(gameId))
+      const data = await gameInfoService.getGameInfo(resolvedGameId)
       if (data) setGameInfo(data)
     }
 
     const unsubscribeScore = scoreService.subscribeToScoreUpdates((newScore) => {
-      if (newScore.game_id === Number(gameId)) setScore(newScore)
+      if (newScore.game_id === resolvedGameId) setScore(newScore)
     })
     const unsubscribeGameInfo = gameInfoService.subscribeToGameInfoUpdates((newGameInfo) => {
-      if (newGameInfo.game_id === Number(gameId)) setGameInfo(newGameInfo)
+      if (newGameInfo.game_id === resolvedGameId) setGameInfo(newGameInfo)
     })
 
     const overlayChannel = supabase
-      .channel(`overlay-control-${gameId}`)
+      .channel(`overlay-control-${resolvedGameId}`)
       .on('broadcast', { event: 'OVERLAY_UPDATE' }, ({ payload }) => {
         if (payload.position) setOverlayPosition(payload.position as OverlayPosition)
         if (payload.scale !== undefined) setOverlayScale(payload.scale as number)
@@ -115,7 +144,7 @@ export default function ScoreboardA() {
       supabase.removeChannel(overlayChannel)
       if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
     }
-  }, [gameId])
+  }, [resolvedGameId])
 
   const inning = score?.inning ?? 1
   const isTop = score?.is_top ?? true
@@ -133,8 +162,8 @@ export default function ScoreboardA() {
   const homeLogoUrl = gameInfo?.home_team_logo_url
   const awayLogoUrl = gameInfo?.away_team_logo_url
   // B 타입(400px) 기준 폰트 크기를 A 타입(350px) 비율로 환산 (350/400 = 0.875)
-  const titleFontSize = Math.round((gameInfo?.title_font_size ?? 30) * (350 / 400))
-  const teamNameFontSize = gameInfo?.team_name_font_size ?? 36
+  const titleFontSize = Math.round((gameInfo?.title_font_size ?? 25) * (350 / 400))
+  const teamNameFontSize = gameInfo?.team_name_font_size ?? 20
   const hBgColor = gameInfo?.home_bg_color ?? "#374151"
   const aBgColor = gameInfo?.away_bg_color ?? "#f7f7f7"
   const hTextColor = getContrastYIQ(hBgColor)
@@ -146,10 +175,12 @@ export default function ScoreboardA() {
         <div style={{
           width: '330px',
           height: '180px',
-          transform: `scale(${overlayScale})`,
+          transform: `scale(${overlayScale}) translateZ(0)`,
           transformOrigin: getTransformOrigin(overlayPosition),
-          fontFamily: "'Noto Sans KR', 'Pretendard Variable', Pretendard, sans-serif",
+          fontFamily: "'Pretendard Variable','Noto Sans KR', 'Pretendard', 'sans-serif'",
           boxSizing: 'border-box',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
         }}>
           {/* SCOREBOARD 콘텐츠 */}
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', boxSizing: 'border-box' }}>
@@ -164,7 +195,7 @@ export default function ScoreboardA() {
                 {/* 어웨이: 로고 → 팀명 → 스코어 */}
                 <div style={{ backgroundColor: aBgColor, display: 'flex', fontWeight: '600', alignItems: 'center', height: '55%', color: aTextColor === 'text-white' ? '#ffffff' : '#000000', boxSizing: 'border-box', margin: 0 }}>
                   <div style={{ width: '35px', height: '35px', flexShrink: 0, margin: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {awayLogoUrl && <img src={awayLogoUrl} alt={`${awayTeam} 로고`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
+                    {awayLogoUrl && <img src={awayLogoUrl} alt={`${awayTeam} 로고`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', imageRendering: '-webkit-optimize-contrast' }} />}
                   </div>
                   <div style={{ flex: 1, fontSize: `${teamNameFontSize}px`, fontWeight: '700', textAlign: 'center', lineHeight: '1.2', overflow: 'hidden' }}>
                     {awayTeam}
@@ -174,7 +205,7 @@ export default function ScoreboardA() {
                 {/* 홈: 로고 → 팀명 → 스코어 */}
                 <div style={{ backgroundColor: hBgColor, display: 'flex', fontWeight: '600', alignItems: 'center', height: '50%', color: hTextColor === 'text-white' ? '#ffffff' : '#000000', boxSizing: 'border-box', margin: 0 }}>
                   <div style={{ width: '35px', height: '35px', flexShrink: 0, margin: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {homeLogoUrl && <img src={homeLogoUrl} alt={`${homeTeam} 로고`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
+                    {homeLogoUrl && <img src={homeLogoUrl} alt={`${homeTeam} 로고`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', imageRendering: '-webkit-optimize-contrast' }} />}
                   </div>
                   <div style={{ flex: 1, fontSize: `${teamNameFontSize}px`, fontWeight: '700', textAlign: 'center', lineHeight: '1.2', overflow: 'hidden' }}>
                     {homeTeam}
