@@ -271,7 +271,7 @@ export default function AdminPanel() {
                     <div className="bg-gray-800 border border-gray-700 rounded-2xl p-4 mb-6">
                         <div className="flex items-center gap-2 mb-3">
                             <span className="text-yellow-400 font-bold text-sm">내 스코어보드 고정 URL</span>
-                            <span className="text-gray-400 text-xs">— 진행 중인 게임이 자동으로 표시됩니다</span>
+                            <span className="text-gray-400 text-xs">— Live 상태로 설정한 게임이 자동으로 표시됩니다</span>
                             <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded font-mono">{userCode}</span>
                         </div>
                         <div className="flex flex-wrap gap-3">
