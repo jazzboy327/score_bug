@@ -73,6 +73,24 @@ export default function ScoreControl() {
         
         // 이닝이 변경되거나 초/말이 바뀔 때 카운트와 베이스 초기화
         if (updatedScore.inning !== score.inning || updatedScore.is_top !== score.is_top) {
+            // 앞으로 이닝 전환 시: 현재 사이드 투수 이닝 투구수 로그 저장 후 초기화
+            if (increment) {
+                const leavingSide = score.is_top ? 'bottom' : 'top'
+                const leavingPitcherId = score.is_top ? score.bottom_pitcher_id : score.top_pitcher_id
+                const leavingInningPitch = score.is_top ? (score.bottom_inning_pitch ?? 0) : (score.top_inning_pitch ?? 0)
+                if (leavingPitcherId && leavingInningPitch > 0) {
+                    try {
+                        await scoreService.savePitchInningLog(score.game_id, leavingPitcherId, leavingSide, score.inning, score.is_top, leavingInningPitch)
+                    } catch (e) {
+                        console.error('Failed to save pitch inning log:', e)
+                    }
+                }
+                if (score.is_top) {
+                    updatedScore.bottom_inning_pitch = 0
+                } else {
+                    updatedScore.top_inning_pitch = 0
+                }
+            }
             updatedScore.b_count = 0;
             updatedScore.s_count = 0;
             updatedScore.o_count = 0;
@@ -80,7 +98,7 @@ export default function ScoreControl() {
             updatedScore.is_second = false;
             updatedScore.is_third = false;
         }
-        
+
         try {
             await scoreService.updateLiveScore(updatedScore);
             setScore(updatedScore);
@@ -130,11 +148,23 @@ export default function ScoreControl() {
         }
     };
 
-    // 볼/스트라이크/아웃 카운트 조작
-    const handleCountChange = async (type: 'ball' | 'strike' | 'out') => {
+    // 볼/스트라이크/파울/아웃 카운트 조작
+    const handleCountChange = async (type: 'ball' | 'strike' | 'foul' | 'out'| 'on-base' | 'b-out') => {
         if (!score) return;
         const updatedScore = { ...score };
-        
+
+        // ball/strike/foul 은 투구수 증가
+        // on-base/b-out 는 투구수 증가 및 볼카운트 초기화
+        if (type !== 'out') {
+            if (score.is_top) {
+                updatedScore.bottom_total_pitch = (score.bottom_total_pitch ?? 0) + 1
+                updatedScore.bottom_inning_pitch = (score.bottom_inning_pitch ?? 0) + 1
+            } else {
+                updatedScore.top_total_pitch = (score.top_total_pitch ?? 0) + 1
+                updatedScore.top_inning_pitch = (score.top_inning_pitch ?? 0) + 1
+            }
+        }
+
         switch (type) {
             case 'ball':
                 updatedScore.b_count = (score.b_count + 1) % 4;
@@ -142,11 +172,26 @@ export default function ScoreControl() {
             case 'strike':
                 updatedScore.s_count = (score.s_count + 1) % 3;
                 break;
+            case 'foul':
+                // 파울: 2스트라이크 이상이면 스트라이크 증가 안 함
+                updatedScore.s_count = Math.min(score.s_count + 1, 2);
+                break;
             case 'out':
                 updatedScore.o_count = (score.o_count + 1) % 3;
                 break;
+            case 'on-base':
+                // 출루: 볼/스트라이크 카운트 초기화
+                updatedScore.b_count = 0;
+                updatedScore.s_count = 0;
+                break;
+            case 'b-out':
+                // 타자 아웃: 아웃 카운트 +1, 볼/스트라이크 카운트 초기화
+                updatedScore.o_count = (score.o_count + 1) % 3;
+                updatedScore.b_count = 0;
+                updatedScore.s_count = 0;
+                break;
         }
-        
+
         try {
             await scoreService.updateLiveScore(updatedScore);
             setScore(updatedScore);
@@ -154,6 +199,57 @@ export default function ScoreControl() {
             console.error('Failed to update count:', error);
         }
     };
+
+    // 투수 설정
+    const handleSetPitcher = async (playerId: number | null) => {
+        if (!resolvedGameId || !score) return
+        const side: 'top' | 'bottom' = popupTeamSide === 'away' ? 'top' : 'bottom'
+        const player = playerId !== null ? popupPlayers.find(p => p.id === playerId) : null
+        const playerName = player?.name ?? null
+        try {
+            // 1. 교체 전 현재 투수의 이닝 투구수 로그 저장
+            const prevPitcherId = side === 'top' ? score.top_pitcher_id : score.bottom_pitcher_id
+            const prevInningPitch = side === 'top' ? (score.top_inning_pitch ?? 0) : (score.bottom_inning_pitch ?? 0)
+            if (prevPitcherId && prevInningPitch > 0) {
+                await scoreService.savePitchInningLog(score.game_id, prevPitcherId, side, score.inning, score.is_top, prevInningPitch)
+            }
+
+            // 2. 재등판 시 누적 투구수 복원
+            let restoredTotal = 0
+            if (playerId !== null) {
+                restoredTotal = await scoreService.getPitcherAccumulatedTotal(resolvedGameId, playerId)
+            }
+
+            // 3. 투수 설정 (복원된 total_pitch 포함)
+            await scoreService.setPitcher(resolvedGameId, side, playerId, playerName, restoredTotal)
+
+            // 4. 로컬 score 상태 즉시 업데이트
+            const updatedScore = { ...score }
+            if (side === 'top') {
+                updatedScore.top_pitcher_id = playerId
+                updatedScore.top_pitcher_name = playerName
+                updatedScore.top_total_pitch = restoredTotal
+                updatedScore.top_inning_pitch = 0
+            } else {
+                updatedScore.bottom_pitcher_id = playerId
+                updatedScore.bottom_pitcher_name = playerName
+                updatedScore.bottom_total_pitch = restoredTotal
+                updatedScore.bottom_inning_pitch = 0
+            }
+            setScore(updatedScore)
+
+            // 5. overlay 채널로 브로드캐스트
+            if (overlayChannelRef.current) {
+                overlayChannelRef.current.send({
+                    type: 'broadcast',
+                    event: 'PITCHER_UPDATE',
+                    payload: { side, pitcherId: playerId, pitcherName: playerName, totalPitch: restoredTotal, inningPitch: 0 },
+                })
+            }
+        } catch (error) {
+            console.error('Failed to set pitcher:', error)
+        }
+    }
 
     // 볼카운트 초기화
     const handleCountReset = async () => {
@@ -237,10 +333,13 @@ export default function ScoreControl() {
         if (!overlayChannelRef.current || popupPlayerId === '' || isBroadcasting) return
         const player = popupPlayers.find(p => p.id === popupPlayerId)
         if (!player) return
+        const displayPlayer = (popupPlayerType === 'p' && player.pitcher_photo_url)
+            ? { ...player, photo_url: player.pitcher_photo_url }
+            : player
         overlayChannelRef.current.send({
             type: 'broadcast',
             event: 'PLAYER_POPUP',
-            payload: { player, position: popupPosition, duration: popupDuration } as PlayerPopupPayload,
+            payload: { player: displayPlayer, position: popupPosition, duration: popupDuration } as PlayerPopupPayload,
         })
         setIsBroadcasting(true)
         if (broadcastCooldownRef.current) clearTimeout(broadcastCooldownRef.current)
@@ -322,6 +421,9 @@ export default function ScoreControl() {
     const isFirst = score?.is_first ?? false
     const isSecond = score?.is_second ?? false
     const isThird = score?.is_third ?? false
+    const currentTotalPitch = isTop ? (score?.bottom_total_pitch ?? 0) : (score?.top_total_pitch ?? 0)
+    const currentInningPitch = isTop ? (score?.bottom_inning_pitch ?? 0) : (score?.top_inning_pitch ?? 0)
+    const pitcherName = isTop ? (score?.bottom_pitcher_name ?? null) : (score?.top_pitcher_name ?? null)
     
     return (
         <div className="bg-[#222] w-screen min-h-screen flex flex-col overflow-y-auto select-none">
@@ -337,6 +439,26 @@ export default function ScoreControl() {
           <div className="text-center pt-3 pb-2 px-4">
             <div className="text-white text-lg font-bold tracking-wide">{gameInfo?.away_team} vs {gameInfo?.home_team}</div>
           </div>
+
+          {/* 투수 현황 배너 */}
+          {pitcherName && (
+            <div className="flex items-center justify-between px-4 py-2 bg-[#1a2a3a] mx-3 rounded-xl mb-2 border border-[#2a4a6a]">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-300 text-xs font-bold">⚾ 투수</span>
+                <span className="text-white text-sm font-bold">{pitcherName}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <div className="text-[10px] text-gray-400">이닝</div>
+                  <div className="text-yellow-300 text-sm font-bold">{currentInningPitch}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[10px] text-gray-400">총</div>
+                  <div className="text-orange-300 text-sm font-bold">{currentTotalPitch}</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 현황 표시 (컴팩트 배너) */}
           <div className="flex flex-row items-center justify-around px-4 py-3 bg-[#2a2a2a] mx-3 rounded-xl mb-4">
@@ -368,20 +490,34 @@ export default function ScoreControl() {
             </div>
           </div>
 
-          {/* ① BSO 버튼 — 가장 자주 탭 */}
+          {/* ① BSO + Foul 버튼 — 가장 자주 탭 */}
           <div className="flex flex-row gap-3 px-4 mb-2">
               <button
                   onClick={() => handleCountChange('ball')}
                   className="flex-1 h-15 bg-[#00c853] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >Ball</button>
+              >🟢Ball</button>
               <button
                   onClick={() => handleCountChange('strike')}
                   className="flex-1 h-15 bg-[#d4a800] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >Strike</button>
+              >🟡Strike</button>
               <button
                   onClick={() => handleCountChange('out')}
                   className="flex-1 h-15 bg-[#ff1744] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >Out</button>
+              >🔴Out</button>
+          </div>
+          <div className="flex flex-row gap-3 px-4 mb-2">
+              <button
+                  onClick={() => handleCountChange('foul')}
+                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
+              >파울</button>
+              <button
+                  onClick={() => handleCountChange('on-base')}
+                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
+              >출루</button>
+               <button
+                  onClick={() => handleCountChange('b-out')}
+                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
+              >아웃</button>
           </div>
 
           {/* 볼카운트 초기화 */}
@@ -389,7 +525,7 @@ export default function ScoreControl() {
               <button
                   onClick={() => handleCountReset()}
                   className="w-full h-14 bg-[#444] text-gray-200 text-base font-semibold rounded-2xl active:opacity-80"
-              >볼카운트 초기화</button>
+              >🚥 볼카운트 초기화</button>
           </div>
 
           {/* 구분선 */}
@@ -412,7 +548,7 @@ export default function ScoreControl() {
               <button
                   onClick={() => handleBaseReset()}
                   className="w-20 h-14 bg-[#444] text-gray-300 text-xs font-semibold rounded-2xl active:opacity-80"
-              >베이스<br/>초기화</button>
+              >🔸베이스<br/> 🔸초기화</button>
           </div>
 
           {/* 구분선 */}
@@ -513,7 +649,9 @@ export default function ScoreControl() {
                                   {(() => {
                                       const filtered = popupPlayerType === 'all'
                                           ? popupPlayers
-                                          : popupPlayers.filter(p => p.player_type === popupPlayerType)
+                                          : popupPlayerType === 'p'
+                                              ? popupPlayers.filter(p => p.is_pitcher)
+                                              : popupPlayers.filter(p => p.is_batter)
                                       return filtered.length === 0 ? (
                                           <div className="text-gray-400 text-sm text-center py-3">선수 없음</div>
                                       ) : filtered.map(p => (
@@ -523,13 +661,49 @@ export default function ScoreControl() {
                                               className={`w-full text-left px-3 py-2.5 text-sm transition-colors active:opacity-80 ${popupPlayerId === p.id ? 'bg-[#6366f1] text-white' : 'text-gray-200 hover:bg-[#444]'}`}
                                           >
                                               {p.number != null ? <span className="text-[#fbbf24] font-bold">#{p.number} </span> : null}
-                                              {p.name}{p.player_type ? <span className="opacity-60"> ({p.player_type === 'p' ? '투수' : '타자'  })</span> : null}
+                                              {p.name}{(p.is_pitcher || p.is_batter) ? <span className="opacity-60"> ({[p.is_pitcher && '투수', p.is_batter && '타자'].filter(Boolean).join('/')})</span> : null}
                                           </button>
                                       ))
                                   })()}
                               </div>
                           )}
                       </div>
+
+                      {/* 투수 설정 (투수 필터 선택 시만 표시) */}
+                      {popupPlayerType === 'p' && (() => {
+                          const sidePitcherId = popupTeamSide === 'away' ? score?.top_pitcher_id : score?.bottom_pitcher_id
+                          const currentPitcher = popupPlayers.find(p => p.id === sidePitcherId)
+                          const selectedIsCurrentPitcher = popupPlayerId !== '' && popupPlayerId === sidePitcherId
+                          return (
+                              <div className="flex flex-col gap-2 p-3 bg-[#1a2a3a] rounded-xl border border-[#2a4a6a]">
+                                  <div className="flex items-center justify-between">
+                                      <span className="text-blue-300 text-xs font-bold">⚾ 현재 등판 투수</span>
+                                      {currentPitcher ? (
+                                          <div className="flex items-center gap-2">
+                                              <span className="text-white text-sm font-bold">{currentPitcher.name}</span>
+                                              <button
+                                                  onClick={() => handleSetPitcher(null)}
+                                                  className="px-2 py-0.5 bg-red-700 hover:bg-red-600 text-white text-xs rounded-lg"
+                                              >해제</button>
+                                          </div>
+                                      ) : (
+                                          <span className="text-gray-400 text-xs">미설정</span>
+                                      )}
+                                  </div>
+                                  <button
+                                      onClick={() => { if (popupPlayerId !== '') handleSetPitcher(selectedIsCurrentPitcher ? null : popupPlayerId as number) }}
+                                      disabled={popupPlayerId === ''}
+                                      className={`w-full h-10 rounded-xl text-sm font-bold transition-colors disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed ${
+                                          selectedIsCurrentPitcher
+                                              ? 'bg-red-700 hover:bg-red-600 text-white'
+                                              : 'bg-blue-700 hover:bg-blue-600 text-white'
+                                      }`}
+                                  >
+                                      {popupPlayerId === '' ? '선수를 선택하세요' : selectedIsCurrentPitcher ? '🔴 투수 해제' : '⚾ 투수 등판'}
+                                  </button>
+                              </div>
+                          )
+                      })()}
 
                       {/* 위치 선택 */}
                       <div className="flex gap-2">
@@ -576,7 +750,7 @@ export default function ScoreControl() {
                   onClick={() => setPositionOpen(prev => !prev)}
                   className="flex items-center justify-between w-full py-3 px-4 bg-[#333] rounded-2xl active:opacity-80"
               >
-                  <span className="text-white text-base font-bold">오버레이 위치</span>
+                  <span className="text-white text-base font-bold">📍오버레이 위치</span>
                   <span className="text-gray-400">{positionOpen ? '▲' : '▼'}</span>
               </button>
               {positionOpen && (

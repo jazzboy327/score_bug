@@ -2,12 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SupabaseTeamsService } from '../services/SupabaseTeamsService'
 import { SupabasePlayersService } from '../services/SupabasePlayersService'
+import { SupabaseGameinfoService } from '../services/SupabaseGameinfoService'
+import { SupabaseScoreService } from '../services/SupabaseScoreService'
 import { userAuth } from '../hooks/userAuth'
 import { Appconfig } from '../config'
-import type { TeamRow, PlayerRow } from '../types/scoreboard'
+import type { TeamRow, PlayerRow, GameInfoRow, ScoreRow } from '../types/scoreboard'
 
 const teamsService = new SupabaseTeamsService()
 const playersService = new SupabasePlayersService()
+const gameInfoService = new SupabaseGameinfoService()
+const scoreService = new SupabaseScoreService()
 
 const POSITIONS = ['투수', '포수', '1루수', '2루수', '3루수', '유격수', '좌익수', '중견수', '우익수', '지명타자', '내야수','외야수']
 const THROWS_BATS_OPTIONS = ['우투우타', '우투좌타', '우투양타', '좌투우타', '좌투좌타', '좌투양타']
@@ -18,7 +22,8 @@ const emptyForm = {
     position: '',
     sub_position: '',
     hand_type: '',
-    player_type: '' as 'p' | 'b' | '',
+    is_pitcher: false,
+    is_batter: false,
 }
 
 export default function PlayerManagement() {
@@ -29,6 +34,8 @@ export default function PlayerManagement() {
     const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
     const [players, setPlayers] = useState<PlayerRow[]>([])
     const [isLoadingPlayers, setIsLoadingPlayers] = useState(false)
+    const [liveGame, setLiveGame] = useState<GameInfoRow | null>(null)
+    const [liveScore, setLiveScore] = useState<ScoreRow | null>(null)
 
     const [gridCols, setGridCols] = useState(2)
     const [showModal, setShowModal] = useState(false)
@@ -36,12 +43,29 @@ export default function PlayerManagement() {
     const [formData, setFormData] = useState(emptyForm)
     const [photoFile, setPhotoFile] = useState<File | null>(null)
     const [photoPreview, setPhotoPreview] = useState('')
+    const [pitcherPhotoFile, setPitcherPhotoFile] = useState<File | null>(null)
+    const [pitcherPhotoPreview, setPitcherPhotoPreview] = useState('')
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState('')
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const pitcherFileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         teamsService.getAllTeams().then(setTeams).catch(console.error)
+    }, [])
+
+    useEffect(() => {
+        gameInfoService.getAllGames()
+            .then(games => {
+                const live = games.find(g => g.is_live) ?? null
+                setLiveGame(live)
+                if (live) {
+                    scoreService.getScore(live.game_id)
+                        .then(setLiveScore)
+                        .catch(console.error)
+                }
+            })
+            .catch(console.error)
     }, [])
 
     useEffect(() => {
@@ -63,11 +87,20 @@ export default function PlayerManagement() {
         setPhotoPreview(URL.createObjectURL(file))
     }
 
+    const handlePitcherPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setPitcherPhotoFile(file)
+        setPitcherPhotoPreview(URL.createObjectURL(file))
+    }
+
     const handleOpenModal = () => {
         setEditingPlayer(null)
         setFormData(emptyForm)
         setPhotoFile(null)
         setPhotoPreview('')
+        setPitcherPhotoFile(null)
+        setPitcherPhotoPreview('')
         setError('')
         setShowModal(true)
     }
@@ -80,10 +113,13 @@ export default function PlayerManagement() {
             position: player.position || '',
             sub_position: player.sub_position || '',
             hand_type: player.hand_type || '',
-            player_type: player.player_type || '',
+            is_pitcher: player.is_pitcher ?? false,
+            is_batter: player.is_batter ?? false,
         })
         setPhotoFile(null)
         setPhotoPreview(player.photo_url || '')
+        setPitcherPhotoFile(null)
+        setPitcherPhotoPreview(player.pitcher_photo_url || '')
         setError('')
         setShowModal(true)
     }
@@ -102,6 +138,10 @@ export default function PlayerManagement() {
             if (photoFile) {
                 photo_url = await playersService.uploadPhoto(selectedTeamId, photoFile)
             }
+            let pitcher_photo_url: string | undefined
+            if (pitcherPhotoFile) {
+                pitcher_photo_url = await playersService.uploadPhoto(selectedTeamId, pitcherPhotoFile)
+            }
 
             const fields = {
                 number: formData.number ? Number(formData.number) : undefined,
@@ -110,7 +150,9 @@ export default function PlayerManagement() {
                 sub_position: formData.sub_position || undefined,
                 hand_type: formData.hand_type || undefined,
                 photo_url: photo_url ?? (editingPlayer?.photo_url || undefined),
-                player_type: (formData.player_type || undefined) as 'p' | 'b' | undefined,
+                pitcher_photo_url: pitcher_photo_url ?? (editingPlayer?.pitcher_photo_url || undefined),
+                is_pitcher: formData.is_pitcher,
+                is_batter: formData.is_batter,
             }
 
             if (editingPlayer) {
@@ -143,6 +185,33 @@ export default function PlayerManagement() {
     }
 
     const selectedTeam = teams.find(t => t.id === selectedTeamId)
+
+    const teamSide: 'top' | 'bottom' | null = selectedTeam && liveGame
+        ? selectedTeam.name === liveGame.home_team
+            ? 'bottom'
+            : selectedTeam.name === liveGame.away_team
+                ? 'top'
+                : null
+        : null
+
+    const currentPitcherId = teamSide === 'top'
+        ? liveScore?.top_pitcher_id
+        : teamSide === 'bottom'
+            ? liveScore?.bottom_pitcher_id
+            : null
+
+    const handleSetPitcher = async (player: PlayerRow) => {
+        if (!liveGame || !teamSide) return
+        const isCurrentPitcher = currentPitcherId === player.id
+        try {
+            await scoreService.setPitcher(liveGame.game_id, teamSide, isCurrentPitcher ? null : player.id, isCurrentPitcher ? null : player.name)
+            const updated = await scoreService.getScore(liveGame.game_id)
+            setLiveScore(updated)
+        } catch (err) {
+            console.error(err)
+            alert('투수 설정에 실패했습니다.')
+        }
+    }
 
     const inputClass = "w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-green-500 transition-colors"
     const selectClass = "w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-green-500 transition-colors"
@@ -187,10 +256,22 @@ export default function PlayerManagement() {
                 {selectedTeamId != null && (
                     <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
                         <div className="flex justify-between items-center mb-5">
-                            <h2 className="text-xl font-bold text-white">
-                                {selectedTeam?.name} 선수단
-                                <span className="ml-2 text-sm text-gray-400 font-normal">({players.length}명)</span>
-                            </h2>
+                            <div>
+                                <h2 className="text-xl font-bold text-white">
+                                    {selectedTeam?.name} 선수단
+                                    <span className="ml-2 text-sm text-gray-400 font-normal">({players.length}명)</span>
+                                </h2>
+                                {liveGame && (
+                                    <div className="text-xs text-gray-400 mt-1">
+                                        {teamSide
+                                            ? <span className="bg-gray-700 px-2 py-1 rounded text-green-400">
+                                                {liveGame.title} — {teamSide === 'bottom' ? '홈팀(초이닝 투수)' : '원정팀(말이닝 투수)'}
+                                              </span>
+                                            : <span className="bg-gray-700 px-2 py-1 rounded text-yellow-400">이 팀은 현재 진행중 경기에 없습니다</span>
+                                        }
+                                    </div>
+                                )}
+                            </div>
                             <div className="flex items-center gap-2">
                                 <div className="flex rounded-lg overflow-hidden border border-gray-600">
                                     {[2, 3, 4].map(col => (
@@ -243,10 +324,11 @@ export default function PlayerManagement() {
                                                 <span className="text-white font-semibold text-sm truncate">{player.name}</span>
                                             </div>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                {player.player_type && (
-                                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${player.player_type === 'p' ? 'bg-blue-600 text-white' : 'bg-orange-500 text-white'}`}>
-                                                        {player.player_type === 'p' ? '투수' : '타자'}
-                                                    </span>
+                                                {player.is_pitcher && (
+                                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-blue-600 text-white">투수</span>
+                                                )}
+                                                {player.is_batter && (
+                                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-500 text-white">타자</span>
                                                 )}
                                                 <span className="text-gray-400 text-xs truncate">
                                                     {[player.position, player.sub_position].filter(Boolean).join(', ') || '—'}
@@ -258,6 +340,19 @@ export default function PlayerManagement() {
                                         </div>
                                         {/* 액션 버튼 */}
                                         <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                            {player.is_pitcher && teamSide && (
+                                                <button
+                                                    onClick={() => handleSetPitcher(player)}
+                                                    className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center ${
+                                                        currentPitcherId === player.id
+                                                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                                                            : 'bg-blue-700 hover:bg-blue-600 text-white'
+                                                    }`}
+                                                    title={currentPitcherId === player.id ? '등판 해제' : '현재 투수 설정'}
+                                                >
+                                                    {currentPitcherId === player.id ? '🔴' : '⚾'}
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handleOpenEditModal(player)}
                                                 className="w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs flex items-center justify-center"
@@ -293,15 +388,35 @@ export default function PlayerManagement() {
                             {/* 사진 업로드 */}
                             <div>
                                 <label className="block text-white text-sm font-medium mb-2">선수 사진</label>
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-24 h-24 rounded-full bg-gray-700 border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer hover:border-green-500 transition-colors overflow-hidden mx-auto"
-                                >
-                                    {photoPreview ? (
-                                        <img src={photoPreview} alt="미리보기" className="w-full h-full object-cover object-top" />
-                                    ) : (
-                                        <span className="text-3xl">📷</span>
-                                    )}
+                                <div className="flex gap-6 justify-center">
+                                    {/* 타자 사진 */}
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="w-20 h-20 rounded-xl bg-gray-700 border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer hover:border-orange-500 transition-colors overflow-hidden"
+                                        >
+                                            {photoPreview ? (
+                                                <img src={photoPreview} alt="타자" className="w-full h-full object-cover object-top" />
+                                            ) : (
+                                                <span className="text-2xl">📷</span>
+                                            )}
+                                        </div>
+                                        <span className="text-orange-400 text-xs font-medium">타자</span>
+                                    </div>
+                                    {/* 투수 사진 */}
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div
+                                            onClick={() => pitcherFileInputRef.current?.click()}
+                                            className="w-20 h-20 rounded-xl bg-gray-700 border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors overflow-hidden"
+                                        >
+                                            {pitcherPhotoPreview ? (
+                                                <img src={pitcherPhotoPreview} alt="투수" className="w-full h-full object-cover object-top" />
+                                            ) : (
+                                                <span className="text-2xl">📷</span>
+                                            )}
+                                        </div>
+                                        <span className="text-blue-400 text-xs font-medium">투수</span>
+                                    </div>
                                 </div>
                                 <input
                                     ref={fileInputRef}
@@ -309,6 +424,13 @@ export default function PlayerManagement() {
                                     accept="image/*"
                                     className="hidden"
                                     onChange={handlePhotoChange}
+                                />
+                                <input
+                                    ref={pitcherFileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handlePitcherPhotoChange}
                                 />
                                 <p className="text-gray-500 text-xs text-center mt-1">클릭하여 사진 선택</p>
                             </div>
@@ -369,23 +491,24 @@ export default function PlayerManagement() {
                                 </div>
                             </div>
 
-                            {/* 투수/타자 구분 */}
+                            {/* 역할 (중복 선택 가능) */}
                             <div>
-                                <label className="block text-white text-sm font-medium mb-2">구분</label>
+                                <label className="block text-white text-sm font-medium mb-2">역할 <span className="text-gray-400 font-normal text-xs">(중복 선택 가능)</span></label>
                                 <div className="flex gap-2">
-                                    {(['', 'p', 'b'] as const).map((val) => {
-                                        const label = val === '' ? '미설정' : val === 'p' ? '투수' : '타자'
-                                        return (
-                                            <button
-                                                key={val}
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, player_type: val }))}
-                                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${formData.player_type === val ? (val === 'p' ? 'bg-blue-600 text-white' : val === 'b' ? 'bg-orange-500 text-white' : 'bg-gray-500 text-white') : 'bg-gray-700 text-gray-400'}`}
-                                            >
-                                                {label}
-                                            </button>
-                                        )
-                                    })}
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, is_pitcher: !prev.is_pitcher }))}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${formData.is_pitcher ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}`}
+                                    >
+                                        ⚾ 투수
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, is_batter: !prev.is_batter }))}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${formData.is_batter ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'}`}
+                                    >
+                                        🏏 타자
+                                    </button>
                                 </div>
                             </div>
 

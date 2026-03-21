@@ -13,6 +13,14 @@ export interface ScoreRow {
   is_third: boolean;
   created_at: string;
   updated_at: string;
+  top_pitcher_id?: number | null;
+  bottom_pitcher_id?: number | null;
+  top_pitcher_name?: string | null;
+  bottom_pitcher_name?: string | null;
+  top_total_pitch?: number;
+  top_inning_pitch?: number;
+  bottom_total_pitch?: number;
+  bottom_inning_pitch?: number;
 }
 
 export interface GameInfoRow {
@@ -60,6 +68,9 @@ export interface ScoreService {
   updateLiveScore(liveScore: ScoreRow): Promise<void>;
   getScore(gameId: number): Promise<ScoreRow | null>;
   createScore(gameId: number): Promise<ScoreRow | null>;
+  setPitcher(gameId: number, side: 'top' | 'bottom', playerId: number | null, playerName: string | null, totalPitch?: number): Promise<void>;
+  savePitchInningLog(gameId: number, pitcherId: number, teamSide: 'top' | 'bottom', inning: number, isTop: boolean, pitchCount: number): Promise<void>;
+  getPitcherAccumulatedTotal(gameId: number, pitcherId: number): Promise<number>;
 }
 
 export interface TeamRow {
@@ -80,7 +91,9 @@ export interface PlayerRow {
   sub_position?: string;
   hand_type?: string;
   photo_url?: string;
-  player_type?: 'p' | 'b';
+  pitcher_photo_url?: string;
+  is_pitcher?: boolean;
+  is_batter?: boolean;
   created_at: string;
   updated_at: string;
 }

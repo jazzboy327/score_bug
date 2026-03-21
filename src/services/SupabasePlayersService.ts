@@ -45,6 +45,16 @@ export class SupabasePlayersService {
         if (error) throw error;
     }
 
+    async getPlayerById(playerId: number): Promise<PlayerRow | null> {
+        const { data, error } = await supabase
+            .from('players')
+            .select('*')
+            .eq('id', playerId)
+            .single();
+        if (error) return null;
+        return data;
+    }
+
     async uploadPhoto(teamId: number, file: File): Promise<string> {
         const ext = file.name.split('.').pop()
         const path = `${teamId}/${Date.now()}.${ext}`

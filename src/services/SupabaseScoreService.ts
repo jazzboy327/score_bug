@@ -26,12 +26,25 @@ export class SupabaseScoreService implements ScoreService {
               is_third: score.is_third,
               s_count: score.s_count,
               b_count: score.b_count,
-              o_count: score.o_count
+              o_count: score.o_count,
+              top_pitcher_name: score.top_pitcher_name,
+              bottom_pitcher_name: score.bottom_pitcher_name,
+              top_total_pitch: score.top_total_pitch,
+              top_inning_pitch: score.top_inning_pitch,
+              bottom_total_pitch: score.bottom_total_pitch,
+              bottom_inning_pitch: score.bottom_inning_pitch,
             })
             .eq('game_id', score.game_id);
-      
+
           if (error) throw error;
       }
+
+    async savePitchInningLog(gameId: number, pitcherId: number, teamSide: 'top' | 'bottom', inning: number, isTop: boolean, pitchCount: number): Promise<void> {
+        const { error } = await supabase
+            .from('pitch_inning_log')
+            .insert({ game_id: gameId, pitcher_id: pitcherId, team_side: teamSide, inning, is_top: isTop, pitch_count: pitchCount });
+        if (error) throw error;
+    }
 
     async getScore(gameId: number): Promise<ScoreRow | null> {
         console.log("getScore", gameId);
@@ -45,6 +58,30 @@ export class SupabaseScoreService implements ScoreService {
 
         if (error) throw error;
         return data;
+    }
+
+    async setPitcher(gameId: number, side: 'top' | 'bottom', playerId: number | null, playerName: string | null, totalPitch: number = 0): Promise<void> {
+        const pitcherField  = side === 'top' ? 'top_pitcher_id'    : 'bottom_pitcher_id'
+        const nameField     = side === 'top' ? 'top_pitcher_name'   : 'bottom_pitcher_name'
+        const totalField    = side === 'top' ? 'top_total_pitch'    : 'bottom_total_pitch'
+        const inningField   = side === 'top' ? 'top_inning_pitch'   : 'bottom_inning_pitch'
+
+        const { error } = await supabase
+            .from('scores')
+            .update({ [pitcherField]: playerId, [nameField]: playerName, [totalField]: totalPitch, [inningField]: 0 })
+            .eq('game_id', gameId)
+
+        if (error) throw error
+    }
+
+    async getPitcherAccumulatedTotal(gameId: number, pitcherId: number): Promise<number> {
+        const { data, error } = await supabase
+            .from('pitch_inning_log')
+            .select('pitch_count')
+            .eq('game_id', gameId)
+            .eq('pitcher_id', pitcherId)
+        if (error || !data) return 0
+        return data.reduce((sum, row) => sum + (row.pitch_count ?? 0), 0)
     }
 
     async createScore(gameId: number): Promise<ScoreRow | null> {
