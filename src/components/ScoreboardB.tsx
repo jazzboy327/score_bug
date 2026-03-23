@@ -114,6 +114,15 @@ export default function ScoreboardB() {
         if (payload.position) setOverlayPosition(payload.position as OverlayPosition)
         if (payload.scale !== undefined) setOverlayScale(payload.scale as number)
       })
+      .on('broadcast', { event: 'PITCHER_UPDATE' }, ({ payload }) => {
+        setScore(prev => {
+          if (!prev) return prev
+          const patch = payload.side === 'top'
+            ? { top_pitcher_id: payload.pitcherId, top_pitcher_name: payload.pitcherName, top_total_pitch: payload.totalPitch, top_inning_pitch: payload.inningPitch }
+            : { bottom_pitcher_id: payload.pitcherId, bottom_pitcher_name: payload.pitcherName, bottom_total_pitch: payload.totalPitch, bottom_inning_pitch: payload.inningPitch }
+          return { ...prev, ...patch }
+        })
+      })
       .on('broadcast', { event: 'PLAYER_POPUP' }, ({ payload }) => {
         if (popupTimerRef.current) clearTimeout(popupTimerRef.current)
         setImgOrientation('portrait')
@@ -167,7 +176,9 @@ export default function ScoreboardB() {
   const aBgColor = gameInfo?.away_bg_color ?? "#f7f7f7"
   const hTextColor = getContrastYIQ(hBgColor)
   const aTextColor = getContrastYIQ(aBgColor)
-
+  const currentTotalPitch = isTop ? (score?.bottom_total_pitch ?? 0) : (score?.top_total_pitch ?? 0)
+  const currentInningPitch = isTop ? (score?.bottom_inning_pitch ?? 0) : (score?.top_inning_pitch ?? 0)
+  const pitcherName = isTop ? (score?.bottom_pitcher_name ?? null) : (score?.top_pitcher_name ?? null)
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'transparent', margin: 0, padding: 0 }}>
       <div style={getPositionContainerStyle(overlayPosition)}>
@@ -180,7 +191,7 @@ export default function ScoreboardB() {
           boxSizing: 'border-box',
         }}>
           {/* SCOREBOARD 콘텐츠 */}
-          <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', backgroundColor: '#ffffff', boxSizing: 'border-box' }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'visible', display: 'flex', backgroundColor: '#ffffff', boxSizing: 'border-box' }}>
             {/* 1. 좌측: 타이틀 */}
             <div style={{ width: '380px', height: '100%', fontSize: `${titleFontSize}px`, fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e5e7eb', color: '#000000', boxSizing: 'border-box', margin: 0, padding: '0px 8px', lineHeight: '1.2', textAlign: 'center' }}>
               {gameTitle}
@@ -214,7 +225,21 @@ export default function ScoreboardB() {
             </div>
 
             {/* 3. 우측: 이닝 주루 BSO */}
-            <div style={{ display: 'flex', width: '380px', alignItems: 'center', gap: '0', padding: '0px 8px', fontSize: '16px', fontWeight: '700', backgroundColor: '#1a1a1a', color: '#ffffff', boxSizing: 'border-box', margin: 0 }}>
+            <div style={{ position: 'relative', display: 'flex', width: '380px', alignItems: 'center', gap: '0', padding: '0px 8px', fontSize: '16px', fontWeight: '700', backgroundColor: '#1a1a1a', color: '#ffffff', boxSizing: 'border-box', margin: 0 }}>
+              {/* 투수 행 (투수 설정 시만, BSO 영역 상단에 absolute) */}
+              {pitcherName && (
+                <div style={{ position: 'absolute', bottom: '100%', left: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '10px', padding: '0 12px', height: '26px', backgroundColor: '#1e293b', boxSizing: 'border-box', borderRadius: '6px 6px 0 0' }}>
+                  <span style={{ fontSize: '13px', color: '#ffffff', fontWeight: '700' }}>P. {pitcherName}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '11px', color: '#93c5fd' }}>⚾</span>
+                    <span style={{ fontSize: '11px', color: '#eeeef1' }}>이닝</span>
+                    <span style={{ fontSize: '13px', color: '#fde047', fontWeight: '700' }}>{currentInningPitch}</span>
+                    <span style={{ fontSize: '13px', color: '#ffffff', fontWeight: '700' }}>/</span>
+                    <span style={{ fontSize: '11px', color: '#eeeef1' }}>총</span>
+                    <span style={{ fontSize: '13px', color: '#fb923c', fontWeight: '700' }}>{currentTotalPitch}</span>
+                  </div>
+                </div>
+              )}
               {/* 이닝 정보 */}
               <div style={{ display: 'flex', width: '50px', fontSize: '24px', justifyContent: 'center', color: '#f97316', lineHeight: '1', boxSizing: 'border-box', whiteSpace: 'nowrap', flexShrink: 0, marginRight: '4px' }}>
                 {inning} {isTop ? '▲' : '▼'}
