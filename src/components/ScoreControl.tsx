@@ -41,10 +41,18 @@ export default function ScoreControl() {
     const broadcastCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const connectedOnceRef = useRef(false)
     const [allTeams, setAllTeams] = useState<{ id: number; name: string }[]>([])
+    const prevScoreRef = useRef<ScoreRow | null>(null)       // undo용 이전 상태
+    const isInningChangingRef = useRef(false)                 // 이닝 전환 중복 방지
+    const [canUndo, setCanUndo] = useState(false)
+    const [showCorrection, setShowCorrection] = useState(false)
+    const prevPitchLogRef = useRef<{ gameId: number; pitcherId: number; teamSide: 'top' | 'bottom'; inning: number; isTop: boolean; wasNew: boolean; prevPitchCount: number; prevBallCount: number; prevStrikeCount: number } | null>(null)
 
     // 이닝 조작
     const handleInningChange = async (increment: boolean) => {
         if (!score) return;
+        if (isInningChangingRef.current) return;
+        isInningChangingRef.current = true;
+        prevPitchLogRef.current = null;
         const updatedScore = { ...score };
         
         if (increment) {
@@ -79,16 +87,73 @@ export default function ScoreControl() {
                 const leavingPitcherId = score.is_top ? score.bottom_pitcher_id : score.top_pitcher_id
                 const leavingInningPitch = score.is_top ? (score.bottom_inning_pitch ?? 0) : (score.top_inning_pitch ?? 0)
                 if (leavingPitcherId && leavingInningPitch > 0) {
+                    const leavingBall = score.is_top ? (score.bottom_inning_ball ?? 0) : (score.top_inning_ball ?? 0)
+                    const leavingStrike = score.is_top ? (score.bottom_inning_strike ?? 0) : (score.top_inning_strike ?? 0)
                     try {
-                        await scoreService.savePitchInningLog(score.game_id, leavingPitcherId, leavingSide, score.inning, score.is_top, leavingInningPitch)
+                        // 기존 로그 확인 (undo 복원용)
+                        const existingLog = await scoreService.getPitchInningLog(score.game_id, leavingPitcherId, score.inning, score.is_top)
+                        // 없으면 INSERT, 있으면 UPDATE (upsert)
+                        await scoreService.savePitchInningLog(score.game_id, leavingPitcherId, leavingSide, score.inning, score.is_top, leavingInningPitch, leavingBall, leavingStrike)
+                        prevPitchLogRef.current = {
+                            gameId: score.game_id,
+                            pitcherId: leavingPitcherId,
+                            teamSide: leavingSide,
+                            inning: score.inning,
+                            isTop: score.is_top,
+                            wasNew: !existingLog,
+                            prevPitchCount: existingLog?.pitch_count ?? 0,
+                            prevBallCount: existingLog?.ball_count ?? 0,
+                            prevStrikeCount: existingLog?.strike_count ?? 0,
+                        }
                     } catch (e) {
                         console.error('Failed to save pitch inning log:', e)
                     }
                 }
                 if (score.is_top) {
                     updatedScore.bottom_inning_pitch = 0
+                    updatedScore.bottom_inning_ball = 0
+                    updatedScore.bottom_inning_strike = 0
                 } else {
                     updatedScore.top_inning_pitch = 0
+                    updatedScore.top_inning_ball = 0
+                    updatedScore.top_inning_strike = 0
+                }
+            } else {
+                // 이전 이닝 복귀: prevPitchLogRef가 있으면 방금 저장된 로그 자동 정리
+                if (prevPitchLogRef.current) {
+                    const { gameId, pitcherId, teamSide, inning, isTop, wasNew, prevPitchCount, prevBallCount, prevStrikeCount } = prevPitchLogRef.current
+                    try {
+                        if (wasNew) {
+                            await scoreService.deletePitchInningLog(gameId, pitcherId, inning, isTop)
+                        } else {
+                            await scoreService.savePitchInningLog(gameId, pitcherId, teamSide, inning, isTop, prevPitchCount, prevBallCount, prevStrikeCount)
+                        }
+                    } catch (e) {
+                        console.error('Failed to auto-cleanup pitch log on backward:', e)
+                    }
+                    prevPitchLogRef.current = null
+                    setCanUndo(false)
+                }
+                // 복귀할 이닝의 기존 로그가 있으면 inning_pitch 복원
+                const enteringSide: 'top' | 'bottom' = updatedScore.is_top ? 'bottom' : 'top'
+                const enteringPitcherId = updatedScore.is_top ? score.bottom_pitcher_id : score.top_pitcher_id
+                if (enteringPitcherId && resolvedGameId) {
+                    try {
+                        const log = await scoreService.getPitchInningLog(resolvedGameId, enteringPitcherId, updatedScore.inning, updatedScore.is_top)
+                        if (log) {
+                            if (enteringSide === 'bottom') {
+                                updatedScore.bottom_inning_pitch = log.pitch_count
+                                updatedScore.bottom_inning_ball = log.ball_count
+                                updatedScore.bottom_inning_strike = log.strike_count
+                            } else {
+                                updatedScore.top_inning_pitch = log.pitch_count
+                                updatedScore.top_inning_ball = log.ball_count
+                                updatedScore.top_inning_strike = log.strike_count
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to restore pitch log on backward:', e)
+                    }
                 }
             }
             updatedScore.b_count = 0;
@@ -105,6 +170,8 @@ export default function ScoreControl() {
         } catch (error) {
             console.error('Failed to update inning:', error);
             console.log(updatedScore);
+        } finally {
+            isInningChangingRef.current = false;
         }
     };
 
@@ -151,6 +218,8 @@ export default function ScoreControl() {
     // 볼/스트라이크/파울/아웃 카운트 조작
     const handleCountChange = async (type: 'ball' | 'strike' | 'foul' | 'out'| 'on-base' | 'b-out') => {
         if (!score) return;
+        prevScoreRef.current = { ...score };
+        setCanUndo(true);
         const updatedScore = { ...score };
 
         // ball/strike/foul 은 투구수 증가
@@ -159,9 +228,19 @@ export default function ScoreControl() {
             if (score.is_top) {
                 updatedScore.bottom_total_pitch = (score.bottom_total_pitch ?? 0) + 1
                 updatedScore.bottom_inning_pitch = (score.bottom_inning_pitch ?? 0) + 1
+                if (type === 'ball') {
+                    updatedScore.bottom_inning_ball = (score.bottom_inning_ball ?? 0) + 1
+                } else if (type === 'strike' || type === 'foul') {
+                    updatedScore.bottom_inning_strike = (score.bottom_inning_strike ?? 0) + 1
+                }
             } else {
                 updatedScore.top_total_pitch = (score.top_total_pitch ?? 0) + 1
                 updatedScore.top_inning_pitch = (score.top_inning_pitch ?? 0) + 1
+                if (type === 'ball') {
+                    updatedScore.top_inning_ball = (score.top_inning_ball ?? 0) + 1
+                } else if (type === 'strike' || type === 'foul') {
+                    updatedScore.top_inning_strike = (score.top_inning_strike ?? 0) + 1
+                }
             }
         }
 
@@ -200,6 +279,23 @@ export default function ScoreControl() {
         }
     };
 
+    // 화면 표시만 수정 (투구수/볼카운트 기록 영향 없음)
+    const handleDisplayCorrection = async (type: 'ball' | 'strike' | 'out') => {
+        if (!score) return;
+        const updatedScore = { ...score };
+        switch (type) {
+            case 'ball':   updatedScore.b_count = (score.b_count + 1) % 4; break;
+            case 'strike': updatedScore.s_count = (score.s_count + 1) % 3; break;
+            case 'out':    updatedScore.o_count = (score.o_count + 1) % 3; break;
+        }
+        try {
+            await scoreService.updateLiveScore(updatedScore);
+            setScore(updatedScore);
+        } catch (error) {
+            console.error('Failed to correct display:', error);
+        }
+    };
+
     // 투수 설정
     const handleSetPitcher = async (playerId: number | null) => {
         if (!resolvedGameId || !score) return
@@ -211,7 +307,9 @@ export default function ScoreControl() {
             const prevPitcherId = side === 'top' ? score.top_pitcher_id : score.bottom_pitcher_id
             const prevInningPitch = side === 'top' ? (score.top_inning_pitch ?? 0) : (score.bottom_inning_pitch ?? 0)
             if (prevPitcherId && prevInningPitch > 0) {
-                await scoreService.savePitchInningLog(score.game_id, prevPitcherId, side, score.inning, score.is_top, prevInningPitch)
+                const prevBall = side === 'top' ? (score.top_inning_ball ?? 0) : (score.bottom_inning_ball ?? 0)
+                const prevStrike = side === 'top' ? (score.top_inning_strike ?? 0) : (score.bottom_inning_strike ?? 0)
+                await scoreService.savePitchInningLog(score.game_id, prevPitcherId, side, score.inning, score.is_top, prevInningPitch, prevBall, prevStrike)
             }
 
             // 2. 재등판 시 누적 투구수 복원
@@ -230,13 +328,21 @@ export default function ScoreControl() {
                 updatedScore.top_pitcher_name = playerName
                 updatedScore.top_total_pitch = restoredTotal
                 updatedScore.top_inning_pitch = 0
+                updatedScore.top_inning_ball = 0
+                updatedScore.top_inning_strike = 0
             } else {
                 updatedScore.bottom_pitcher_id = playerId
                 updatedScore.bottom_pitcher_name = playerName
                 updatedScore.bottom_total_pitch = restoredTotal
                 updatedScore.bottom_inning_pitch = 0
+                updatedScore.bottom_inning_ball = 0
+                updatedScore.bottom_inning_strike = 0
             }
             setScore(updatedScore)
+            // 투수 등판은 undo 대상 아님 → undo 상태 초기화
+            prevScoreRef.current = null
+            prevPitchLogRef.current = null
+            setCanUndo(false)
 
             // 5. overlay 채널로 브로드캐스트
             if (overlayChannelRef.current) {
@@ -264,6 +370,36 @@ export default function ScoreControl() {
             setScore(updatedScore);
         } catch (error) {
             console.error('Failed to reset count:', error);
+        }
+    };
+
+    // 되돌리기 (마지막 카운트/이닝 변경 1단계 undo)
+    const handleUndo = async () => {
+        if (!prevScoreRef.current) return;
+        const prev = prevScoreRef.current;
+        try {
+            // 이닝 전환 시 저장된 pitch_inning_log 되돌리기
+            if (prevPitchLogRef.current) {
+                const { gameId, pitcherId, teamSide, inning, isTop, wasNew, prevPitchCount, prevBallCount, prevStrikeCount } = prevPitchLogRef.current;
+                try {
+                    if (wasNew) {
+                        // 새로 INSERT된 경우 → 삭제
+                        await scoreService.deletePitchInningLog(gameId, pitcherId, inning, isTop);
+                    } else {
+                        // 기존 row를 UPDATE한 경우 → 이전 값으로 복원
+                        await scoreService.savePitchInningLog(gameId, pitcherId, teamSide, inning, isTop, prevPitchCount, prevBallCount, prevStrikeCount);
+                    }
+                } catch (e) {
+                    console.error('Failed to undo pitch log:', e);
+                }
+                prevPitchLogRef.current = null;
+            }
+            await scoreService.updateLiveScore(prev);
+            setScore(prev);
+            prevScoreRef.current = null;
+            setCanUndo(false);
+        } catch (error) {
+            console.error('Failed to undo:', error);
         }
     };
 
@@ -490,42 +626,90 @@ export default function ScoreControl() {
             </div>
           </div>
 
-          {/* ① BSO + Foul 버튼 — 가장 자주 탭 */}
-          <div className="flex flex-row gap-3 px-4 mb-2">
+          {/* 게임 진행용 버튼 */}
+          <div className="px-4 mb-1">
+            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">⚾ 게임 진행</div>
+            <div className="flex gap-2 mb-2">
               <button
-                  onClick={() => handleCountChange('ball')}
-                  className="flex-1 h-15 bg-[#00c853] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >🟢Ball</button>
+                onClick={() => handleCountChange('ball')}
+                className="flex-1 h-16 bg-[#00c853] text-white rounded-2xl active:opacity-80 flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-xl font-black">볼</span>
+                <span className="text-[10px] opacity-70">+1</span>
+              </button>
               <button
-                  onClick={() => handleCountChange('strike')}
-                  className="flex-1 h-15 bg-[#d4a800] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >🟡Strike</button>
+                onClick={() => handleCountChange('strike')}
+                className="flex-1 h-16 bg-[#d4a800] text-white rounded-2xl active:opacity-80 flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-xl font-black">스트라이크</span>
+                <span className="text-[10px] opacity-70">+1</span>
+              </button>
               <button
-                  onClick={() => handleCountChange('out')}
-                  className="flex-1 h-15 bg-[#ff1744] text-white text-2xl font-bold rounded-2xl active:opacity-80"
-              >🔴Out</button>
-          </div>
-          <div className="flex flex-row gap-3 px-4 mb-2">
+                onClick={() => handleCountChange('foul')}
+                className="flex-1 h-16 bg-[#6d28d9] text-white rounded-2xl active:opacity-80 flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-xl font-black">파울</span>
+                <span className="text-[10px] opacity-70">+1</span>
+              </button>
+            </div>
+            <div className="flex gap-2 mb-2">
               <button
-                  onClick={() => handleCountChange('foul')}
-                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
-              >파울</button>
+                onClick={() => handleCountChange('on-base')}
+                className="flex-1 h-14 bg-[#0288d1] text-white rounded-2xl active:opacity-80 flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-lg font-black">출루</span>
+                <span className="text-[10px] opacity-70">투구+1 · BSO초기화</span>
+              </button>
               <button
-                  onClick={() => handleCountChange('on-base')}
-                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
-              >출루</button>
-               <button
-                  onClick={() => handleCountChange('b-out')}
-                  className="w-full h-12 bg-[#6d28d9] text-white text-lg font-bold rounded-2xl active:opacity-80"
-              >아웃</button>
+                onClick={() => handleCountChange('b-out')}
+                className="flex-1 h-14 bg-[#e53935] text-white rounded-2xl active:opacity-80 flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-lg font-black">타자 아웃</span>
+                <span className="text-[10px] opacity-70">아웃+1 · BSO초기화</span>
+              </button>
+            </div>
           </div>
 
-          {/* 볼카운트 초기화 */}
-          <div className="px-4 mb-4">
+          {/* 구분선 */}
+          <div className="w-full border-t border-gray-700 mx-0 mb-3 mt-1" />
+
+          {/* 스코어보드 수정용 버튼 */}
+          <div className="px-4 mb-2">
+            <button
+              onClick={() => setShowCorrection(v => !v)}
+              className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2 hover:text-gray-300 transition-colors"
+            >
+              🔧 스코어보드 수정 <span className="text-[10px]">{showCorrection ? '▲' : '▼'}</span>
+            </button>
+            {showCorrection && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleDisplayCorrection('ball')}
+                  className="flex-1 h-10 bg-[#1a3a1a] border border-[#00c853]/40 text-[#00c853] text-sm font-bold rounded-xl active:opacity-80"
+                >B +1</button>
+                <button
+                  onClick={() => handleDisplayCorrection('strike')}
+                  className="flex-1 h-10 bg-[#3a3000] border border-[#d4a800]/40 text-[#d4a800] text-sm font-bold rounded-xl active:opacity-80"
+                >S +1</button>
+                <button
+                  onClick={() => handleDisplayCorrection('out')}
+                  className="flex-1 h-10 bg-[#3a0a0a] border border-[#ff1744]/40 text-[#ff1744] text-sm font-bold rounded-xl active:opacity-80"
+                >O +1</button>
+              </div>
+            )}
+          </div>
+
+          {/* 볼카운트 초기화 + 되돌리기 */}
+          <div className="flex gap-3 px-4 mb-4">
               <button
                   onClick={() => handleCountReset()}
-                  className="w-full h-14 bg-[#444] text-gray-200 text-base font-semibold rounded-2xl active:opacity-80"
+                  className="flex-1 h-14 bg-[#444] text-gray-200 text-base font-semibold rounded-2xl active:opacity-80"
               >🚥 볼카운트 초기화</button>
+              <button
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                  className={`w-20 h-14 text-base font-bold rounded-2xl transition-colors ${canUndo ? 'bg-orange-600 text-white active:opacity-80' : 'bg-[#333] text-gray-600 cursor-not-allowed'}`}
+              >↩ 취소</button>
           </div>
 
           {/* 구분선 */}

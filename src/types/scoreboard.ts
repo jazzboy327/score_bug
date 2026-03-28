@@ -21,6 +21,11 @@ export interface ScoreRow {
   top_inning_pitch?: number;
   bottom_total_pitch?: number;
   bottom_inning_pitch?: number;
+  // v2.5: 이닝별 볼/스트라이크
+  top_inning_ball?: number;
+  top_inning_strike?: number;
+  bottom_inning_ball?: number;
+  bottom_inning_strike?: number;
 }
 
 export interface GameInfoRow {
@@ -69,7 +74,7 @@ export interface ScoreService {
   getScore(gameId: number): Promise<ScoreRow | null>;
   createScore(gameId: number): Promise<ScoreRow | null>;
   setPitcher(gameId: number, side: 'top' | 'bottom', playerId: number | null, playerName: string | null, totalPitch?: number): Promise<void>;
-  savePitchInningLog(gameId: number, pitcherId: number, teamSide: 'top' | 'bottom', inning: number, isTop: boolean, pitchCount: number): Promise<void>;
+  savePitchInningLog(gameId: number, pitcherId: number, teamSide: 'top' | 'bottom', inning: number, isTop: boolean, pitchCount: number, ballCount: number, strikeCount: number): Promise<void>;
   getPitcherAccumulatedTotal(gameId: number, pitcherId: number): Promise<number>;
 }
 
@@ -96,6 +101,38 @@ export interface PlayerRow {
   is_batter?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface GameBatterStats {
+  id: number;
+  game_id: number;
+  player_id?: number | null;
+  player_name: string;
+  team_side: 'home' | 'away';
+  at_bats: number;
+  hits: number;
+  doubles: number;
+  triples: number;
+  home_runs: number;
+  rbi: number;
+  runs: number;
+  walks: number;
+  strikeouts: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PitchInningLog {
+  id: number;
+  game_id: number;
+  pitcher_id: number;
+  team_side: 'top' | 'bottom';
+  inning: number;
+  is_top: boolean;
+  pitch_count: number;
+  ball_count: number;
+  strike_count: number;
+  created_at: string;
 }
 
 export type OverlayPosition =

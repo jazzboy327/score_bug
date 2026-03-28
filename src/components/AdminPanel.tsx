@@ -246,6 +246,12 @@ export default function AdminPanel() {
                     </div>
                     <div className="flex gap-3 items-center">
                         <button
+                            onClick={() => navigate(Appconfig.dashboard_url)}
+                            className="w-30 h-10 bg-yellow-600 hover:bg-yellow-500 text-sm text-white rounded-lg transition-all duration-200 shadow-lg font-bold"
+                        >
+                            📊 대시보드
+                        </button>
+                        <button
                             onClick={() => navigate(Appconfig.player_management_url)}
                             className="w-30 h-10 bg-indigo-600 hover:bg-indigo-700 text-sm text-white rounded-lg transition-all duration-200 shadow-lg font-bold"
                         >

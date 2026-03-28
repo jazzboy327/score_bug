@@ -8,6 +8,7 @@ export const Appconfig = {
     edit_url: '/e/:gameId',
 
     player_management_url: '/p',
+    dashboard_url: '/d',
 
     // supabase auth token key (프로젝트 별로 이름이 다르다)
     auth_token_key: import.meta.env.VITE_SUPABASE_AUTH_TOKEN_KEY,

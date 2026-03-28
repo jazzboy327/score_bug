@@ -8,6 +8,7 @@ import { Appconfig } from "./config"
 import ScoreboardA from "./components/ScoreboardA"
 import ScoreboardB from "./components/ScoreboardB"
 import PlayerManagement from "./components/PlayerManagement"
+import Dashboard from "./components/Dashboard"
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path={Appconfig.scoreboardA_template_url} element={<ScoreboardA />} />
         <Route path={Appconfig.scoreboardB_template_url} element={<ScoreboardB />} />
         <Route path={Appconfig.player_management_url} element={<PlayerManagement />} />
+        <Route path={Appconfig.dashboard_url} element={<Dashboard />} />
         <Route path="*" element={<Navigate to={Appconfig.login_url} replace />} />
       </Routes>
     </BrowserRouter>
