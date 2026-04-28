@@ -239,12 +239,12 @@ export default function AdminPanel() {
         <div className={`min-h-screen ${theme.background} p-6 transition-colors duration-500`}>
             <div className="max-w-7xl mx-auto">
                 {/* 헤더 */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col gap-4 mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-2">경기 <br /> 목록</h1>
+                        <h1 className="text-4xl font-bold text-white mb-2">경기 목록</h1>
                         <p className="text-gray-400">경기 관리 및 스코어보드 제어</p>
                     </div>
-                    <div className="flex gap-3 items-center">
+                    <div className="flex flex-wrap gap-3 items-center">
                         <button
                             onClick={() => navigate(Appconfig.dashboard_url)}
                             className="w-30 h-10 bg-yellow-600 hover:bg-yellow-500 text-sm text-white rounded-lg transition-all duration-200 shadow-lg font-bold"
