@@ -61,7 +61,7 @@ export default function ScoreControl() {
                 updatedScore.is_top = false;
             } else {
                 // 현재 말(하)이면 다음 이닝 초(상)로 변경
-                if (score.inning < 12) {
+                if (score.inning < 15) {
                     updatedScore.inning = score.inning + 1;
                     updatedScore.is_top = true;
                 }
