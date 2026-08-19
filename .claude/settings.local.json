@@ -7,7 +7,11 @@
       "Bash(find:*)",
       "Bash(xattr:*)",
       "Bash(test:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
